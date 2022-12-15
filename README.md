@@ -15,7 +15,7 @@ Work in progress. Inspired by https://openmower.de/
 
 * Ubuntu 20.04 Server
 * ROS1
-* Packages: gpsd gpsd–clients python-gps
+* Packages: gpsd gpsd–clients python-gps rtklib
 
 ## Installation
 
@@ -28,3 +28,12 @@ Unfortuunately, as soon as the Simplertk2b is connected, the Pi will no longer b
 After rebooting you should now see (scrambled) messages coming in from the GPS device when you look at `less -f /dev/ttyAMA0`.
 
 We are going to configure `gpsd` to provide the GPS data. For this to work `/etc/default/gpsd` has to be adjusted for `DEVICES="/dev/ttyAMA0"` and `GPSD_OPTIONS="-s 38400"` (select the serial speed baud rate that your ublox is currently configured). Afterwards restart the deamon with `sudo systemctl restart gpsd.socket`. Then finally you should see some GPS data when you open up `cgps`.
+
+In order for us to provide correction data to the rover, we are using a free NTRIP caster. Later we will add our own base station. The connection is done from the Raspberry Pi through USB to the second USB port of the Simplertk2b board that connects to the XBee socket, where we connect the RX/TX-pins according to https://youtu.be/qlkN70bBfFQ. The F9P configuration can be found in [gnss-rover.txt](gnss-rover.txt).
+
+For sending the correction data, we also use str2str, which can be added as a package with `sudo apt install rtklib`. As we want to have the data streamed to the Simplertk2b board at all times we will install `str2str` as a systemd servie. Have a look at [str2str.service](str2str.service) and then install it as follows:
+```
+sudo cp str2str.service /lib/systemd/system/.
+sudo systemctl start str2str.service
+sudo systemctl enable str2str.service
+```
