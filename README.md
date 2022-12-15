@@ -29,9 +29,11 @@ After rebooting you should now see (scrambled) messages coming in from the GPS d
 
 We are going to configure `gpsd` to provide the GPS data. For this to work `/etc/default/gpsd` has to be adjusted for `DEVICES="/dev/ttyAMA0"` and `GPSD_OPTIONS="-s 38400"` (select the serial speed baud rate that your ublox is currently configured). Afterwards restart the deamon with `sudo systemctl restart gpsd.socket`. Then finally you should see some GPS data when you open up `cgps`.
 
-In order for us to provide correction data to the rover, we are using a free NTRIP caster. Later we will add our own base station. The connection is done from the Raspberry Pi through USB to the second USB port of the Simplertk2b board that connects to the XBee socket, where we connect the RX/TX-pins according to https://youtu.be/qlkN70bBfFQ. The F9P configuration can be found in [gnss-rover.txt](gnss-rover.txt).
+In order for us to provide correction data to the rover, we are using a free NTRIP caster. Later we will add our own base station. The connection is done from the Raspberry Pi through USB to the second USB port of the Simplertk2b board that connects to the XBee socket, where we connect the RX/TX-pins according to https://youtu.be/qlkN70bBfFQ. Additionally, the Baudrate for UART1 is also increased to 115200 in Ucenter under UBX->CFG->PRT. The F9P configuration can be found in [gnss-rover.txt](gnss-rover.txt).
 
-For sending the correction data, we also use str2str, which can be added as a package with `sudo apt install rtklib`. As we want to have the data streamed to the Simplertk2b board at all times we will install `str2str` as a systemd servie. Have a look at [str2str.service](str2str.service) and then install it as follows:
+Afterwards, the configuration in `/etc/default/gpsd` has to be ajusted to reflect the changed baudrate `GPSD_OPTIONS="-s 115200"`. Restart the deamon with `sudo systemctl restart gpsd.socket` and you should again be able to see position data when you look at `cgps`. You will also notice that the rate of data coming in is much higher now as we increased it from 1Hz (factory setting) to 10Hz.
+
+For sending the correction data, we use str2str, which doesn't have to be compiled ourselves but can simply be installed as an Ubuntu package with `sudo apt install rtklib`. As we want to have the data streamed to the Simplertk2b board at all times, we will install `str2str` as a systemd servie. Have a look at [str2str.service](str2str.service) and then install it as follows:
 ```
 sudo cp str2str.service /lib/systemd/system/.
 sudo systemctl start str2str.service
