@@ -71,7 +71,7 @@
   <transmission name="transmission_base_to_left_wheel">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="base_to_left_wheel_joint">
-      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor_base_to_left_wheel"/>
   </transmission>
@@ -79,7 +79,7 @@
   <transmission name="transmission_base_to_right_wheel">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="base_to_right_wheel_joint">
-      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor_base_to_right_wheel"/>
   </transmission>
