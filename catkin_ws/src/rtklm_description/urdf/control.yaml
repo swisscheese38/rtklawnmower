@@ -1,0 +1,12 @@
+rtklawnmower_left_wheel_controller:
+  type: position_controllers/JointPositionController
+  joint: base_to_left_wheel_joint
+  
+rtklawnmower_right_wheel_controller:
+  type: position_controllers/JointPositionController
+  joint: base_to_right_wheel_joint
+  
+gazebo_ros_control:
+  pid_gains:
+    base_to_left_wheel_joint: {p: 100.0, i: 0.01, d: 10.0}
+    base_to_right_wheel_joint: {p: 100.0, i: 0.01, d: 10.0}
