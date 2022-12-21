@@ -1,5 +1,44 @@
 <?xml version="1.0"?>
-<robot name="rtklawnmower">
+<robot name="rtklawnmower" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="chassis_m" value="4"/>
+  <xacro:property name="chassis_l" value="0.40"/>
+  <xacro:property name="chassis_w" value="0.25"/>
+  <xacro:property name="chassis_h" value="0.10"/>
+  <xacro:property name="wheel_m" value="0.5"/>
+  <xacro:property name="wheel_r" value="0.06"/>
+  <xacro:property name="wheel_l" value="0.08"/>
+  <xacro:property name="caster_m" value="0.1"/>
+  <xacro:property name="caster_r" value="0.04"/>
+
+  <xacro:macro name="inertia_box" params="m l w h">
+    <inertial>
+      <mass value="${m}"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="${(1/12) * m * (w*w + h*h)}" ixy="0.0" ixz="0.0"
+               iyy="${(1/12) * m * (l*l + h*h)}" iyz="0.0"
+               izz="${(1/12) * m * (l*l + w*w)}" />
+    </inertial>
+  </xacro:macro>
+  <xacro:macro name="inertia_cylinder" params="m r l">
+    <inertial>
+      <mass value="${m}"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="${(1/12) * m * (3*r*r + l*l)}" ixy="0.0" ixz="0.0"
+               iyy="${(1/12) * m * (3*r*r + l*l)}" iyz="0.0"
+               izz="${(1/2)  * m * (r*r)}" />
+    </inertial>
+  </xacro:macro>
+  <xacro:macro name="inertia_sphere" params="m r">
+    <inertial>
+      <mass value="${m}"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="${(2/5) * m * (r*r)}" ixy="0.0" ixz="0.0"
+               iyy="${(2/5) * m * (r*r)}" iyz="0.0"
+               izz="${(2/5) * m * (r*r)}" />
+    </inertial>
+  </xacro:macro>
+
   <link name="base_footprint">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -19,22 +58,16 @@
     <visual>
       <origin xyz="0.1 0 0.12" rpy="0 0 0"/>
       <geometry>
-        <box size="0.4 0.25 0.1"/>
+        <box size="${chassis_l} ${chassis_w} ${chassis_h}"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0.1 0 0.12" rpy="0 0 0"/>
       <geometry>
-        <box size="0.40 0.25 0.10"/>
+        <box size="${chassis_l} ${chassis_w} ${chassis_h}"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="4"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="${(1/12)*4*(0.25*0.25+0.10*0.10)}" ixy="0.0" ixz="0.0"
-               iyy="${(1/12)*4*(0.40*0.40+0.10*0.10)}" iyz="0.0"
-               izz="${(1/12)*4*(0.40*0.40+0.25*0.25)}" />
-    </inertial>
+    <xacro:inertia_box m="${chassis_m}" l="${chassis_l}" w="${chassis_w}" h="${chassis_h}"/>
   </link>
   
   <!-- Right wheel -->
@@ -42,30 +75,22 @@
     <visual>
       <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
       <geometry>
-        <cylinder length="0.08" radius="0.06"/>
+        <cylinder radius="${wheel_r}" length="${wheel_l}"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
       <geometry>
-        <cylinder length="0.08" radius="0.06"/>
+        <cylinder radius="${wheel_r}" length="${wheel_l}"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="0.5"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="${(1/12)*0.5*(3*0.06*0.06+0.08*0.08)}" ixy="0.0" ixz="0.0"
-               iyy="${(1/12)*0.5*(3*0.06*0.06+0.08*0.08)}" iyz="0.0"
-               izz="${(1/2)*0.5*0.06*0.06}" />
-    </inertial>
+    <xacro:inertia_cylinder m="${wheel_m}" r="${wheel_r}" l="${wheel_l}"/>
   </link>
   <joint name="right_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="right_wheel"/>
     <origin xyz="0.0 0.08 0.0" rpy="0 0 0"/>
     <axis rpy="0  0" xyz="0 1 0"/>
-    <limit effort="100" velocity="100"/>
-    <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <transmission name="right_wheel_joint_transmission">
     <type>transmission_interface/SimpleTransmission</type>
@@ -83,30 +108,22 @@
     <visual>
       <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
       <geometry>
-        <cylinder length="0.08" radius="0.06"/>
+        <cylinder radius="${wheel_r}" length="${wheel_l}"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
       <geometry>
-        <cylinder length="0.08" radius="0.06"/>
+        <cylinder radius="${wheel_r}" length="${wheel_l}"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="0.5"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="${(1/12)*0.5*(3*0.06*0.06+0.08*0.08)}" ixy="0.0" ixz="0.0"
-               iyy="${(1/12)*0.5*(3*0.06*0.06+0.08*0.08)}" iyz="0.0"
-               izz="${(1/2)*0.5*0.06*0.06}" />
-    </inertial>
+    <xacro:inertia_cylinder m="${wheel_m}" r="${wheel_r}" l="${wheel_l}"/>
   </link>
   <joint name="left_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="left_wheel"/>
     <origin xyz="0.0 -0.08 0.0" rpy="0 0 0" />
     <axis rpy="0  0" xyz="0 1 0"/>
-    <limit effort="100" velocity="100"/>
-    <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <transmission name="left_wheel_joint_transmission">
     <type>transmission_interface/SimpleTransmission</type>
@@ -124,22 +141,16 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <sphere radius="0.04"/>
+        <sphere radius="${caster_r}"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <sphere radius="0.04"/>
+        <sphere radius="${caster_r}"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="0.1"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="${(2/5)*0.1*0.04*0.04}" ixy="0.0" ixz="0.0"
-               iyy="${(2/5)*0.1*0.04*0.04}" iyz="0.0"
-               izz="${(2/5)*0.1*0.04*0.04}" />
-    </inertial>
+    <xacro:inertia_sphere m="${caster_m}" r="${caster_r}"/>
   </link>
   <joint name="caster_right_joint" type="fixed">
     <parent link="base_link"/>
@@ -152,22 +163,16 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <sphere radius="0.04"/>
+        <sphere radius="${caster_r}"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.04"/>
+        <sphere radius="${caster_r}"/>
       </geometry>
       <origin xyz="0 0 0" rpy="0 0 0"/>
     </collision>
-    <inertial>
-      <mass value="0.1"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="${(2/5)*0.1*0.04*0.04}" ixy="0.0" ixz="0.0"
-               iyy="${(2/5)*0.1*0.04*0.04}" iyz="0.0"
-               izz="${(2/5)*0.1*0.04*0.04}" />
-    </inertial>
+    <xacro:inertia_sphere m="${caster_m}" r="${caster_r}"/>
   </link>
   <joint name="caster_left_joint" type="fixed">
     <parent link="base_link"/>
