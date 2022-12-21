@@ -63,11 +63,13 @@
     <limit effort="100" velocity="100"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
-  <transmission name="right_wheel_joint_trans">
+  <transmission name="right_wheel_joint_transmission">
     <type>transmission_interface/SimpleTransmission</type>
-    <joint name="right_wheel_joint"/>
+    <joint name="right_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+	</joint>
     <actuator name="right_wheel_joint_motor">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
@@ -100,11 +102,13 @@
     <limit effort="100" velocity="100"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
-  <transmission name="left_wheel_joint_trans">
+  <transmission name="left_wheel_joint_transmission">
     <type>transmission_interface/SimpleTransmission</type>
-    <joint name="left_wheel_joint"/>
+    <joint name="left_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+	</joint>
     <actuator name="left_wheel_joint_motor">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
@@ -158,25 +162,8 @@
   </joint>
   
   <gazebo>
-    <plugin filename="libgazebo_ros_diff_drive.so" name="gazebo_diffdrive_control">
-      <rosDebugLevel>Debug</rosDebugLevel>
-      <publishWheelTF>True</publishWheelTF>
-      <publishTf>1</publishTf>
-      <publishWheelJointState>true</publishWheelJointState>
-      <alwaysOn>true</alwaysOn>
-      <updateRate>100.0</updateRate>
-      <leftJoint>left_wheel_joint</leftJoint>
-      <rightJoint>right_wheel_joint</rightJoint>
-      <wheelSeparation>0.16</wheelSeparation>
-      <wheelDiameter>0.06</wheelDiameter>
-      <broadcastTF>1</broadcastTF>
-      <wheelTorque>30</wheelTorque>
-      <wheelAcceleration>1.8</wheelAcceleration>
-      <commandTopic>cmd_vel</commandTopic>
-      <odometryFrame>odom</odometryFrame>
-      <odometryTopic>odom</odometryTopic>
-      <robotBaseFrame>base_link</robotBaseFrame>
-    </plugin>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+	</plugin>
   </gazebo>
 
 </robot>

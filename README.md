@@ -15,9 +15,12 @@ Work in progress. Inspired by https://openmower.de/
 
 * Ubuntu 20.04 Server
 * ROS1
-* Packages: gpsd gpsd–clients python-gps rtklib
+* Rover Packages: `git ros-noetic-ros-base gpsd gpsd–clients python-gps rtklib`
+* Development Node Packages: `git ros-noetic-desktop-full python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential`
 
 ## Installation
+
+### GPS
 
 The Simplertk2b is going to be connected to the Raspberry Pi through a serial connection (using the provided Arduino Serial Shield by Ardusimple). For this to work, serial needs to be enabled by adding the line `enable_uart=1` to `/boot/firmware/syscfg.txt`. As we don't want to login through serial we remove the part `console=serial0,115200` from `/boot/firmware/cmdline.txt`. Disable serial Getty by `sudo systemctl stop serial-getty@ttyS0.service` and `sudo systemctl disable serial-getty@ttyS0.service`.
 
@@ -39,3 +42,12 @@ sudo cp str2str.service /lib/systemd/system/.
 sudo systemctl start str2str.service
 sudo systemctl enable str2str.service
 ```
+
+### ROS
+
+Install ROS according to [http://wiki.ros.org/Installation/Ubuntu]. Make sure you have sourced your ros installation with `source /opt/ros/noetic/setup.bash` and then Catkin make your cloned workspace
+```
+cd /home/vboxuser/git/rtklawnmower/catkin_ws/
+catkin_make
+```
+Then also source your workspace `source ~/git/rtklawnmower/catkin_ws/devel/setup.bash`.
