@@ -13,6 +13,8 @@
     <parent link="base_footprint"/>
     <child link="base_link"/>
   </joint>
+  
+  <!-- Chassis -->
   <link name="base_link">
     <visual>
       <origin xyz="0.1 0 0.12" rpy="0 0 0"/>
@@ -34,6 +36,8 @@
                izz="${(1/12)*4*(0.40*0.40+0.25*0.25)}" />
     </inertial>
   </link>
+  
+  <!-- Right wheel -->
   <link name="right_wheel">
     <visual>
       <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
@@ -73,6 +77,8 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
+  
+  <!-- Left wheel -->
   <link name="left_wheel">
     <visual>
       <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
@@ -112,58 +118,66 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
-  <link name="caster_right_link">
+
+  <!--Right caster -->
+  <link name="right_caster">
     <visual>
-      <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <sphere radius="0.025"/>
+        <sphere radius="0.04"/>
       </geometry>
     </visual>
     <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <sphere radius="0.025"/>
+        <sphere radius="0.04"/>
       </geometry>
-      <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
     </collision>
     <inertial>
-      <mass value="0.5"/>
+      <mass value="0.1"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <inertia ixx="${(2/5)*0.1*0.04*0.04}" ixy="0.0" ixz="0.0"
+               iyy="${(2/5)*0.1*0.04*0.04}" iyz="0.0"
+               izz="${(2/5)*0.1*0.04*0.04}" />
     </inertial>
   </link>
   <joint name="caster_right_joint" type="fixed">
     <parent link="base_link"/>
-    <child link="caster_right_link"/>
-    <origin xyz="0.3 0.1 0.01" rpy="-${pi/2} 0 0"/>
+    <child link="right_caster"/>
+    <origin xyz="0.25 0.1 -0.01" rpy="0 0 0"/>
   </joint>
-  <link name="caster_left_link">
+
+  <!-- Left caster -->
+  <link name="left_caster">
     <visual>
-      <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <sphere radius="0.025"/>
+        <sphere radius="0.04"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.025"/>
+        <sphere radius="0.04"/>
       </geometry>
-      <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
     </collision>
     <inertial>
-      <mass value="0.5"/>
+      <mass value="0.1"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <inertia ixx="${(2/5)*0.1*0.04*0.04}" ixy="0.0" ixz="0.0"
+               iyy="${(2/5)*0.1*0.04*0.04}" iyz="0.0"
+               izz="${(2/5)*0.1*0.04*0.04}" />
     </inertial>
   </link>
   <joint name="caster_left_joint" type="fixed">
     <parent link="base_link"/>
-    <child link="caster_left_link"/>
-    <origin xyz="0.3 -0.1 0.01" rpy="-${pi/2} 0 0"/>
+    <child link="left_caster"/>
+    <origin xyz="0.25 -0.1 -0.01" rpy="0 0 0"/>
   </joint>
   
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-	</plugin>
+	  </plugin>
   </gazebo>
 
 </robot>
