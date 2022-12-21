@@ -1,16 +1,40 @@
 <?xml version="1.0"?>
 <launch>
-  <param name="robot_description" command="$(find xacro)/xacro '$(find rtklm_description)/urdf/model.urdf'"/>
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+  
+  <!--
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui"/>
+  -->
+
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find rtklm_gazebo)/launch/empty.world"/>
     <arg name="debug" value="false"/>
     <arg name="gui" value="true"/>
-    <arg name="paused" value="false"/>
+    <arg name="paused" value="true"/>
     <arg name="use_sim_time" value="true"/>
+    <arg name="headless" value="false"/>
   </include>
+  
+  <arg name="model" value="$(find rtklm_description)/urdf/main.xacro"/>
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
+  <node 
+    name="urdf_spawner" 
+    pkg="gazebo_ros" 
+    type="spawn_model" 
+    respawn="false" 
+    output="screen"
+    args="-z 1
+          -urdf 
+          -model rtklawnmower
+          -param robot_description" />
+
+  <!--
   <rosparam command="load" file="$(find rtklm_description)/urdf/diffdrive_control.yaml"/>
-  <node name="controller_spawner" pkg="controller_manager" type="spawner" args="rtklawnmower_diffdrive_controller"/>
-  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -model rtklawnmower -param robot_description"/>
+  <node 
+    name="controller_spawner" 
+    pkg="controller_manager" 
+    type="spawner" 
+    args="rtklawnmower_diffdrive_controller"/>
+  -->
+
 </launch>
