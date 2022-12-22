@@ -2,11 +2,8 @@ rtklawnmower_diffdrive_controller:
   type: diff_drive_controller/DiffDriveController
   left_wheel: left_wheel_joint
   right_wheel: right_wheel_joint
-  base_frame_id: base_link
   pose_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
   twist_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
-  wheel_separation : 0.2
-  wheel_radius : 0.06
   
 gazebo_ros_control:
   pid_gains:

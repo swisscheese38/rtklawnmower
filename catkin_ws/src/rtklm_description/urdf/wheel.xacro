@@ -29,17 +29,29 @@
         <parent link="base_link"/>
         <child link="${prefix}_wheel"/>
         <origin xyz="${joint_offset}" rpy="0 0 0"/>
+        <limit effort="100" velocity="100"/>
     </joint>
 
     <transmission name="${prefix}_wheel_transmission">
         <type>transmission_interface/SimpleTransmission</type>
         <actuator name="${prefix}_wheel_motor">
             <mechanicalReduction>1</mechanicalReduction>
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
         </actuator>
         <joint name="${prefix}_wheel_joint">
             <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
         </joint>
     </transmission>
+
+    <gazebo reference="${prefix}_wheel">
+      <mu1 value="1.0"/>
+      <mu2 value="1.0"/>
+      <kp  value="10000000.0" />
+      <kd>100.0</kd>
+      <minDepth>0.001</minDepth>
+      <maxVel>0.1</maxVel>
+      <material>Gazebo/FlatBlack</material>
+    </gazebo>
 
   </xacro:macro>
 </robot>
