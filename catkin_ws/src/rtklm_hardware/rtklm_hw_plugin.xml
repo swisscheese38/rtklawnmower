@@ -1,0 +1,9 @@
+<library path="lib/librtklm_hardware_interfaces">
+    <class name="rtklm_hardware_interface/RtklmInterface"
+        type="rtklm_hardware_interface::RtklmInterface"
+        base_class_type="hardware_interface::RobotHW">
+        <description>
+      Interface for the Rtklawnmower's Arduino
+        </description>
+    </class>
+</library>
