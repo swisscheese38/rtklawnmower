@@ -4,11 +4,9 @@
   <arg name="model" value="$(find rtklm_description)/urdf/main.xacro"/>
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
 
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-      <param name="use_gui" value="False"/>
-  </node>
+  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui"/>
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
-  <node name="rviz" pkg="rviz" type="rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find rtklm_description)/launch/rtklm.rviz"/>
 
 </launch>
