@@ -3,16 +3,23 @@
 #define PIN_LEFT_DIR 4 // Direction Control
 #define PIN_LEFT_PWM 5 // PWM Speed Control
 #define FREQ_ENC_SAMPLING 5; // Encoder feedback sampling frequency in Hz
+#define FREQ_PWM_ADJUST 100; // PWM control adjustment frequency in Hz
 
 unsigned int  encSamplingPeriodMillis = 1000/FREQ_ENC_SAMPLING;
+unsigned int  pwmAdjustPeriodMillis = 1000/FREQ_PWM_ADJUST;
 
-unsigned long lastSampledLeftEncTicks;
 unsigned long lastSampledEncMillis;
+unsigned long lastSampledLeftEncTicks;
 float         lastSampledLeftEncFreq;
 
 unsigned long currLeftEncTicks;
+
 String        inputString = "";
 bool          inputStringComplete = false;
+
+unsigned long lastPwmAdjustMillis;
+float         motorspeedCurr;
+float         motorspeedTarget;
 
 void setup() {
   Serial.begin(USB_BAUDRATE);
@@ -26,21 +33,38 @@ void setup() {
 }
 
 void loop() {
+  unsigned long currMillis = millis();
+  
+  // handle targetspeed input
   if (inputStringComplete) {
-    int motorspeed = inputString.toInt();
+    float motorspeed = inputString.toFloat();
     if (-10 <= motorspeed && motorspeed <= 10) {
-      digitalWrite(PIN_LEFT_DIR, motorspeed > 0 ? LOW : HIGH);
-      analogWrite(PIN_LEFT_PWM, map(abs(motorspeed), 0, 10, 0, 255));
+      motorspeedTarget = motorspeed / 10.0;
     }
     inputString = "";
     inputStringComplete = false;
   }
-  unsigned long currMillis = millis();
+  
+  // adjust pwm if not on target yet
+  if (lastPwmAdjustMillis + pwmAdjustPeriodMillis < currMillis) {
+    if (0.004 <= abs(motorspeedCurr - motorspeedTarget)) {    
+      if (motorspeedCurr < motorspeedTarget) {
+        motorspeedCurr += 0.004; // fractionn of 255
+      } else if (motorspeedCurr > motorspeedTarget) {
+        motorspeedCurr -= 0.004; // fractionn of 255
+      }
+      digitalWrite(PIN_LEFT_DIR, motorspeedCurr > 0 ? LOW : HIGH);
+      analogWrite(PIN_LEFT_PWM, abs(motorspeedCurr) * 255.0);
+    }
+    lastPwmAdjustMillis = currMillis;
+  }
+
+  // handle encoder feedback
   if (lastSampledEncMillis + encSamplingPeriodMillis < currMillis) {
     lastSampledLeftEncFreq = 1000.0 * float(currLeftEncTicks-lastSampledLeftEncTicks) / float(currMillis-lastSampledEncMillis);
-    Serial.println(lastSampledLeftEncFreq);
     lastSampledLeftEncTicks = currLeftEncTicks;
     lastSampledEncMillis = currMillis;
+    Serial.println(lastSampledLeftEncFreq);
   }
 }
 
