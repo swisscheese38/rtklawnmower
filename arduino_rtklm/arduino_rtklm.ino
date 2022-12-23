@@ -1,42 +1,52 @@
 #define USB_BAUDRATE 9600 // Serial USB baud rate
+
 #define PIN_LEFT_ENC 2 // Encoder Feedback
+#define PIN_RIGHT_ENC 3 // Encoder Feedback
 #define PIN_LEFT_DIR 4 // Direction Control
 #define PIN_LEFT_PWM 5 // PWM Speed Control
-#define FREQ_ENC_SAMPLING 10; // Encoder feedback sampling frequency in Hz
+#define PIN_RIGHT_PWM 6 // PWM Speed Control
+#define PIN_RIGHT_DIR 7 // Direction Control
+
 #define FREQ_PWM_ADJUST 100; // PWM control adjustment frequency in Hz
+#define FREQ_ENC_OUTPUT 2; // Encoder feedback output frequency in Hz
 
-unsigned int  encSamplingPeriodMillis = 1000/FREQ_ENC_SAMPLING;
 unsigned int  pwmAdjustPeriodMillis = 1000/FREQ_PWM_ADJUST;
+unsigned int  encOutputPeriodMillis = 1000/FREQ_ENC_OUTPUT;
 
-unsigned long lastSampledLeftEncTicks;
-unsigned long lastSampledLeftEncMillis;
-
-unsigned long lastLeftEncTicks;
-unsigned long lastLeftEncMillis;
-
-float         leftEncFreq;
+long          leftEncTicks;
+long          rightEncTicks;
 
 String        inputString = "";
 bool          inputStringComplete = false;
 
 unsigned long lastPwmAdjustMillis;
-float         motorspeedCurr;
-float         motorspeedTarget;
+unsigned long lastEncOutputMillis;
+
+float         leftSpeedCurr;
+float         leftSpeedTarget;
+float         rightSpeedCurr;
+float         rightSpeedTarget;
 
 void setup() {
   Serial.begin(USB_BAUDRATE);
   pinMode(PIN_LEFT_PWM, OUTPUT);
+  pinMode(PIN_RIGHT_PWM, OUTPUT);
   pinMode(PIN_LEFT_DIR, OUTPUT);
+  pinMode(PIN_RIGHT_DIR, OUTPUT);
   pinMode(PIN_LEFT_ENC, INPUT_PULLUP);
+  pinMode(PIN_RIGHT_ENC, INPUT_PULLUP);
   analogWrite(PIN_LEFT_PWM, 0);
+  analogWrite(PIN_RIGHT_PWM, 0);
   attachInterrupt(digitalPinToInterrupt(PIN_LEFT_ENC), onLeftEncTick, RISING);
-  Serial.println("Control Motor speed and direction by Serial monitor");
-  Serial.println("Send values -10 through 10");
+  attachInterrupt(digitalPinToInterrupt(PIN_RIGHT_ENC), onRightEncTick, RISING);
 }
 
 void onLeftEncTick() {
-  lastLeftEncTicks++;
-  lastLeftEncMillis = millis();
+  leftEncTicks += (leftSpeedCurr >= 0) ? 1 : -1;
+}  
+
+void onRightEncTick() {
+  rightEncTicks += (rightSpeedCurr >= 0) ? 1 : -1;
 }
 
 void loop() {
@@ -44,9 +54,15 @@ void loop() {
   
   // handle targetspeed input
   if (inputStringComplete) {
-    float motorspeed = inputString.toFloat();
-    if (-10 <= motorspeed && motorspeed <= 10) {
-      motorspeedTarget = motorspeed / 10.0;
+
+    int delimPos = inputString.indexOf(" ");
+    float leftSpeed = inputString.substring(0, delimPos).toFloat();
+    float rightSpeed = inputString.substring(delimPos).toFloat();
+    if (-1 <= leftSpeed && leftSpeed <= 1) {
+      leftSpeedTarget = leftSpeed;
+    }
+    if (-1 <= rightSpeed && rightSpeed <= 1) {
+      rightSpeedTarget = rightSpeed;
     }
     inputString = "";
     inputStringComplete = false;
@@ -54,27 +70,25 @@ void loop() {
   
   // adjust pwm if not close enough to target yet
   if (lastPwmAdjustMillis + pwmAdjustPeriodMillis < currMillis) {
-    if (0.004 <= abs(motorspeedCurr - motorspeedTarget)) {    
-      motorspeedCurr += motorspeedCurr < motorspeedTarget ? 0.004 : -0.004;
-      digitalWrite(PIN_LEFT_DIR, motorspeedCurr > 0 ? LOW : HIGH);
-      analogWrite(PIN_LEFT_PWM, abs(motorspeedCurr) * 255.0);
+    if (0.004 <= abs(leftSpeedCurr - leftSpeedTarget)) {    
+      leftSpeedCurr += (leftSpeedCurr < leftSpeedTarget) ? 0.004 : -0.004;
+      digitalWrite(PIN_LEFT_DIR, (leftSpeedCurr > 0) ? LOW : HIGH);
+      analogWrite(PIN_LEFT_PWM, abs(leftSpeedCurr) * 255.0);
+    }
+    if (0.004 <= abs(rightSpeedCurr - rightSpeedTarget)) {    
+      rightSpeedCurr += (rightSpeedCurr < rightSpeedTarget) ? 0.004 : -0.004;
+      digitalWrite(PIN_RIGHT_DIR, (rightSpeedCurr > 0) ? LOW : HIGH);
+      analogWrite(PIN_RIGHT_PWM, abs(rightSpeedCurr) * 255.0);
     }
     lastPwmAdjustMillis = currMillis;
   }
 
   // handle encoder feedback
-  if (lastSampledLeftEncMillis + encSamplingPeriodMillis < currMillis) {
-    unsigned int tickDiff = lastLeftEncTicks - lastSampledLeftEncTicks;
-    unsigned int millisDiff = lastLeftEncMillis - lastSampledLeftEncMillis;
-    if (tickDiff == 0) {
-      leftEncFreq = 0;
-      lastSampledLeftEncMillis = currMillis;
-    } else {
-      leftEncFreq = 1000.0 * float(tickDiff) / float(millisDiff);
-      lastSampledLeftEncMillis = lastLeftEncMillis;
-    }
-    lastSampledLeftEncTicks = lastLeftEncTicks;
-    Serial.println(leftEncFreq);
+  if (lastEncOutputMillis + encOutputPeriodMillis < currMillis) {
+    Serial.print(leftEncTicks);
+    Serial.print(" ");
+    Serial.println(rightEncTicks);
+    lastEncOutputMillis = currMillis;
   }
 }
 
