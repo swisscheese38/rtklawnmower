@@ -2,7 +2,7 @@
 #define PIN_LEFT_ENC 2 // Encoder Feedback
 #define PIN_LEFT_DIR 4 // Direction Control
 #define PIN_LEFT_PWM 5 // PWM Speed Control
-#define FREQ_ENC_SAMPLING 5; // Encoder feedback sampling frequency in Hz
+#define FREQ_ENC_SAMPLING 10; // Encoder feedback sampling frequency in Hz
 #define FREQ_PWM_ADJUST 100; // PWM control adjustment frequency in Hz
 
 unsigned int  encSamplingPeriodMillis = 1000/FREQ_ENC_SAMPLING;
@@ -45,14 +45,10 @@ void loop() {
     inputStringComplete = false;
   }
   
-  // adjust pwm if not on target yet
+  // adjust pwm if not close enough to target yet
   if (lastPwmAdjustMillis + pwmAdjustPeriodMillis < currMillis) {
     if (0.004 <= abs(motorspeedCurr - motorspeedTarget)) {    
-      if (motorspeedCurr < motorspeedTarget) {
-        motorspeedCurr += 0.004; // fractionn of 255
-      } else if (motorspeedCurr > motorspeedTarget) {
-        motorspeedCurr -= 0.004; // fractionn of 255
-      }
+      motorspeedCurr += motorspeedCurr < motorspeedTarget ? 0.004 : -0.004;
       digitalWrite(PIN_LEFT_DIR, motorspeedCurr > 0 ? LOW : HIGH);
       analogWrite(PIN_LEFT_PWM, abs(motorspeedCurr) * 255.0);
     }
