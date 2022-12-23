@@ -1,55 +1,55 @@
-#define pinTickLeft 2
-#define pinReverseLeft 4
-#define pinPwmLeft 5
+#define USB_BAUDRATE 9600 // Serial USB baud rate
+#define PIN_LEFT_ENC 2 // Encoder Feedback
+#define PIN_LEFT_DIR 4 // Direction Control
+#define PIN_LEFT_PWM 5 // PWM Speed Control
+#define FREQ_ENC_SAMPLING 5; // Encoder feedback sampling frequency in Hz
 
-long tick = 0;
+unsigned int  encSamplingPeriodMillis = 1000/FREQ_ENC_SAMPLING;
+
+unsigned long lastSampledLeftEncTicks;
+unsigned long lastSampledEncMillis;
+float         lastSampledLeftEncFreq;
+
+unsigned long currLeftEncTicks;
+String        inputString = "";
+bool          inputStringComplete = false;
 
 void setup() {
-  Serial.begin(9600);
-  pinMode(pinPwmLeft, OUTPUT);
-  pinMode(pinReverseLeft, OUTPUT);
-  pinMode(pinTickLeft, INPUT_PULLUP);
-  analogWrite(pinPwmLeft, 0);
-  attachInterrupt(digitalPinToInterrupt(pinTickLeft), tickLeft, CHANGE);
-  Serial.println("Control Motor speed by Serial monitor");
-  Serial.println("Send -1, 0 or 1 to control Motor direction");
-}
-
-void tickLeft() {
-  tick = tick + 1;
+  Serial.begin(USB_BAUDRATE);
+  pinMode(PIN_LEFT_PWM, OUTPUT);
+  pinMode(PIN_LEFT_DIR, OUTPUT);
+  pinMode(PIN_LEFT_ENC, INPUT_PULLUP);
+  analogWrite(PIN_LEFT_PWM, 0);
+  attachInterrupt(digitalPinToInterrupt(PIN_LEFT_ENC), []{currLeftEncTicks++;}, RISING);
+  Serial.println("Control Motor speed and direction by Serial monitor");
+  Serial.println("Send values -10 through 10");
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    int motorspeed = Serial.parseInt();
-    if (motorspeed == 0) {
-      analogWrite(pinPwmLeft, 0);
-      Serial.println("stop");
+  if (inputStringComplete) {
+    int motorspeed = inputString.toInt();
+    if (-10 <= motorspeed && motorspeed <= 10) {
+      digitalWrite(PIN_LEFT_DIR, motorspeed > 0 ? LOW : HIGH);
+      analogWrite(PIN_LEFT_PWM, map(abs(motorspeed), 0, 10, 0, 255));
     }
-    if (motorspeed == 1) {
-      analogWrite(pinPwmLeft, 20);
-      digitalWrite(pinReverseLeft, LOW);
-      Serial.println("low");
+    inputString = "";
+    inputStringComplete = false;
+  }
+  unsigned long currMillis = millis();
+  if (lastSampledEncMillis + encSamplingPeriodMillis < currMillis) {
+    lastSampledLeftEncFreq = 1000.0 * float(currLeftEncTicks-lastSampledLeftEncTicks) / float(currMillis-lastSampledEncMillis);
+    Serial.println(lastSampledLeftEncFreq);
+    lastSampledLeftEncTicks = currLeftEncTicks;
+    lastSampledEncMillis = currMillis;
+  }
+}
+
+void serialEvent() {
+  while (Serial.available()) {
+    char inChar = (char)Serial.read();
+    inputString += inChar;
+    if (inChar == '\n') {
+      inputStringComplete = true;
     }
-    if (motorspeed == -1) {
-      analogWrite(pinPwmLeft, 20);
-      digitalWrite(pinReverseLeft, HIGH);
-      Serial.println("high");
-    }
-
-
-    Serial.print("You send: ");
-    Serial.print(motorspeed);
-    Serial.println();
-
-    //int pwm = map(motorspeed, 0, 9, 0, 255);
-    
-    //Serial.print("Converted to PWM: ");
-    //Serial.print(pwm);
-    //Serial.println();
-
-    //analogWrite(pinPwmLeft, pwm);
-
-    Serial.println(tick);
   }
 }
