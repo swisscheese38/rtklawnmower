@@ -12,7 +12,7 @@ void setup() {
   analogWrite(pinPwmLeft, 0);
   attachInterrupt(digitalPinToInterrupt(pinTickLeft), tickLeft, CHANGE);
   Serial.println("Control Motor speed by Serial monitor");
-  Serial.println("Send 0 or 9 to control Motor speed");
+  Serial.println("Send -1, 0 or 1 to control Motor direction");
 }
 
 void tickLeft() {
