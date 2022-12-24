@@ -6,11 +6,14 @@
 #define PIN_LEFT_PWM 5 // PWM Speed Control
 #define PIN_RIGHT_PWM 6 // PWM Speed Control
 #define PIN_RIGHT_DIR 7 // Direction Control
+
+#define ENC_TICKS_PER_ROUND 456.0; // Num of ticks per revolution
 #define FREQ_ENC_SAMPLING 5; // Encoder sampling frequency in Hz
 #define FREQ_ENC_OUTPUT 2; // Encoder feedback output frequency in Hz
 
 unsigned int  encSamplingPeriodMillis = 1000/FREQ_ENC_OUTPUT;
 unsigned int  encOutputPeriodMillis = 1000/FREQ_ENC_OUTPUT;
+float         radPerTick = TWO_PI/ENC_TICKS_PER_ROUND;
 
 long          leftEncLastTicks;
 long          rightEncLastTicks;
@@ -109,13 +112,13 @@ void loop() {
   
   // output encoder feedback
   if (lastEncOutputMillis + encOutputPeriodMillis < currMillis) {
-    Serial.print(leftEncLastTicks);
+    Serial.print(radPerTick*leftEncLastTicks);
     Serial.print(" ");
-    Serial.print(leftEncFreq);
+    Serial.print(radPerTick*leftEncFreq);
     Serial.print(" ");
-    Serial.print(rightEncLastTicks);
+    Serial.print(radPerTick*rightEncLastTicks);
     Serial.print(" ");
-    Serial.println(rightEncFreq);
+    Serial.println(radPerTick*rightEncFreq);
     lastEncOutputMillis = currMillis;
   }
 }
