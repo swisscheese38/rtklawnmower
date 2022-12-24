@@ -6,12 +6,24 @@
 #define PIN_LEFT_PWM 5 // PWM Speed Control
 #define PIN_RIGHT_PWM 6 // PWM Speed Control
 #define PIN_RIGHT_DIR 7 // Direction Control
+#define FREQ_ENC_SAMPLING 5; // Encoder sampling frequency in Hz
 #define FREQ_ENC_OUTPUT 2; // Encoder feedback output frequency in Hz
 
+unsigned int  encSamplingPeriodMillis = 1000/FREQ_ENC_OUTPUT;
 unsigned int  encOutputPeriodMillis = 1000/FREQ_ENC_OUTPUT;
 
-long          leftEncTicks;
-long          rightEncTicks;
+long          leftEncLastTicks;
+long          rightEncLastTicks;
+unsigned long leftEncLastMillis;
+unsigned long rightEncLastMillis;
+
+long          leftEncLastSampleTicks;
+long          rightEncLastSampleTicks;
+unsigned long leftEncLastSampleMillis;
+unsigned long rightEncLastSampleMillis;
+
+float         leftEncFreq;
+float         rightEncFreq;
 
 String        inputBuffer = "";
 bool          inputBufferComplete = false;
@@ -36,14 +48,17 @@ void setup() {
 }
 
 void onLeftEncTick() {
-  leftEncTicks += (leftSpeed >= 0) ? 1 : -1;
+  leftEncLastTicks += (leftSpeed >= 0) ? 1 : -1;
+  leftEncLastMillis = millis();
 }  
 
 void onRightEncTick() {
-  rightEncTicks += (rightSpeed >= 0) ? 1 : -1;
+  rightEncLastTicks += (rightSpeed >= 0) ? 1 : -1;
+  rightEncLastMillis = millis();
 }
 
 void loop() {
+  unsigned long currMillis = millis();
   
   // handle speed input
   if (inputBufferComplete) {
@@ -64,12 +79,43 @@ void loop() {
     inputBufferComplete = false;
   }
 
-  // handle encoder feedback
-  unsigned long currMillis = millis();
+  // calculate left tick frequency
+  if (leftEncLastSampleMillis + encSamplingPeriodMillis < currMillis) {
+    int tickDiff = leftEncLastTicks - leftEncLastSampleTicks;
+    int millisDiff = leftEncLastMillis - leftEncLastSampleMillis;
+    if (tickDiff == 0 || millisDiff == 0) {
+      leftEncFreq = 0;
+      leftEncLastSampleMillis = currMillis;
+    } else {
+      leftEncFreq = 1000.0 * float(tickDiff) / float(millisDiff);
+      leftEncLastSampleMillis = leftEncLastMillis;
+    }
+    leftEncLastSampleTicks = leftEncLastTicks;
+  }
+
+  // calculate right tick frequency
+  if (rightEncLastSampleMillis + encSamplingPeriodMillis < currMillis) {
+    int tickDiff = rightEncLastTicks - rightEncLastSampleTicks;
+    int millisDiff = rightEncLastMillis - rightEncLastSampleMillis;
+    if (tickDiff == 0 || millisDiff == 0) {
+      rightEncFreq = 0;
+      rightEncLastSampleMillis = currMillis;
+    } else {
+      rightEncFreq = 1000.0 * float(tickDiff) / float(millisDiff);
+      rightEncLastSampleMillis = rightEncLastMillis;
+    }
+    rightEncLastSampleTicks = rightEncLastTicks;
+  }
+  
+  // output encoder feedback
   if (lastEncOutputMillis + encOutputPeriodMillis < currMillis) {
-    Serial.print(leftEncTicks);
+    Serial.print(leftEncLastTicks);
     Serial.print(" ");
-    Serial.println(rightEncTicks);
+    Serial.print(leftEncFreq);
+    Serial.print(" ");
+    Serial.print(rightEncLastTicks);
+    Serial.print(" ");
+    Serial.println(rightEncFreq);
     lastEncOutputMillis = currMillis;
   }
 }
