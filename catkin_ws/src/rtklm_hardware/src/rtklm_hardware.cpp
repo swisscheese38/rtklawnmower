@@ -19,6 +19,8 @@
 namespace rtklm_hardware_interface
 {
 
+    serial::Serial ser;
+
     RtklmInterface::RtklmInterface()
     {
     }
@@ -29,18 +31,40 @@ namespace rtklm_hardware_interface
 
     bool RtklmInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh)
     {
-        //TODO
+        try {
+            ser.setPort("/dev/ttyUSB1");
+            ser.setBaudrate(9600);
+            serial::Timeout to = serial::Timeout::simpleTimeout(1000);
+            ser.setTimeout(to);
+            ser.open();
+        } catch (serial::IOException& e) {
+            ROS_ERROR_STREAM("Unable to open serial port");
+            return false;
+        }
+
+        if (ser.isOpen()) {
+            ROS_INFO_STREAM("Serial Port initialized");
+        } else {
+            return false;
+        }
+
         return true;
     }
 
     void RtklmInterface::read(const ros::Time &time, const ros::Duration &period)
     {
-        //TODO
+        if (ser.available()) {
+            ROS_INFO_STREAM("Reading from serial port");
+            std::string result = ser.read(ser.available());
+            ROS_INFO_STREAM("Read: " << result);
+        }
     }
 
     void RtklmInterface::write(const ros::Time &time, const ros::Duration &period)
     {
-        //TODO
+        std::string command = "0.0 0.0";
+        ROS_INFO_STREAM("Writing to serial port" << command);
+        ser.write(command);
     }
 
 } // namespace rtklm_hardware_interface
