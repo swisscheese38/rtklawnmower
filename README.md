@@ -16,7 +16,7 @@ Work in progress. Inspired by https://openmower.de/
 * Ubuntu 20.04 Server
 * ROS1
 * Rover Packages: `git ros-noetic-ros-base gpsd gpsd–clients python-gps rtklib`
-* Development Node Packages: `git ros-noetic-desktop-full python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential`
+* Development Node Packages: `git ros-noetic-desktop-full python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential ros-noetic-serial`
 
 ## Installation
 

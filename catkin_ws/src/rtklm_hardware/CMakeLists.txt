@@ -10,6 +10,7 @@ project(rtklm_hardware)
 find_package(catkin REQUIRED COMPONENTS
   controller_manager
   hardware_interface
+  serial
 )
 
 ## System dependencies are found with CMake's conventions
@@ -104,7 +105,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES rtklm_hardware
-   CATKIN_DEPENDS controller_manager hardware_interface
+   CATKIN_DEPENDS controller_manager hardware_interface serial
 #  DEPENDS system_lib
 )
 

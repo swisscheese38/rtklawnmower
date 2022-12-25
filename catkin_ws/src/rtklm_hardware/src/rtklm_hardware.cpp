@@ -12,6 +12,7 @@
 #include <arpa/inet.h>
 #include <sstream>
 #include <math.h>
+#include <serial/serial.h>
 #define PULSES_PER_REV 1496.0
 #define WHEEL_DIAMETER 0.065
 
