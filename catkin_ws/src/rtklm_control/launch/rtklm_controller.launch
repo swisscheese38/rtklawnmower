@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Robot description -->
+  <arg name="model" value="$(find rtklm_description)/urdf/main.xacro"/>
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
+
+  <!-- Controller -->
+  <rosparam command="load" file="$(find rtklm_control)/config/rtklm_control.yaml" />
+
+  <!-- Custom Arduino Hardware Interface -->
+  <node name="hardware_interface" pkg="rtklm_hardware" type="rtklm_hardware_node" 
+    respawn="true" respawn_delay="10"/>
+
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" 
+     args="joint_state_controller diff_drive_controller"/>  
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+    respawn="false" />
+
+</launch>

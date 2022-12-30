@@ -104,8 +104,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES rtklm_hardware
-   CATKIN_DEPENDS controller_manager hardware_interface serial
+  LIBRARIES rtklm_hardware
+#   CATKIN_DEPENDS controller_manager hardware_interface serial
 #  DEPENDS system_lib
 )
 
@@ -122,7 +122,7 @@ include_directories(
 
 ## Declare a C++ library
 add_library(rtklm_hardware
-  src/rtklm_hardware.cpp
+  src/rtklm_hardware_node.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -136,7 +136,7 @@ add_library(rtklm_hardware
 add_executable(rtklm_hardware_node
   src/rtklm_hardware_node.cpp
 )
-target_link_libraries(rtklm_hardware_node rtklm_hardware ${catkin_LIBRARIES})
+#target_link_libraries(rtklm_hardware_node rtklm_hardware ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -146,12 +146,12 @@ target_link_libraries(rtklm_hardware_node rtklm_hardware ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(rtklm_hardware_node ${PROJECT_NAME})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(rtklm_hardware_node
+  ${PROJECT_NAME} ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##

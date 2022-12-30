@@ -36,10 +36,10 @@
         <type>transmission_interface/SimpleTransmission</type>
         <actuator name="${prefix}_wheel_motor">
             <mechanicalReduction>1</mechanicalReduction>
-            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+	    <hardwareInterface>rtklm_hardware_interface/RtklmInterface</hardwareInterface>
         </actuator>
         <joint name="${prefix}_wheel_joint">
-            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            <hardwareInterface>rtklm_hardware_interface/RtklmInterface</hardwareInterface>
         </joint>
     </transmission>
 

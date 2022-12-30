@@ -62,6 +62,5 @@
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <hardware_interface plugin="${prefix}/rtklm_hw_plugin.xml"/>
   </export>
 </package>

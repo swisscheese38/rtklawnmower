@@ -1,4 +1,4 @@
-diffdrive_controller:
+diff_drive_controller:
   type: diff_drive_controller/DiffDriveController
   left_wheel: left_wheel_joint
   right_wheel: right_wheel_joint
