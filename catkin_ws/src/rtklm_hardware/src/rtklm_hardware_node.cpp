@@ -39,15 +39,19 @@ public:
   }
 
   void read(){
-    ROS_INFO_STREAM("States for joints: " << pos[0] << ", " << pos[1] << ", " << vel[0] << ", " << vel[1]);
-    std::string result;
-    result = serial.read(serial.available());
-    ROS_INFO_STREAM("Read: " << result);
-    //pos_[0] =  resultGetK1P.value() * ticksToRadians;
-    //pos_[1] = -resultGetK2P.value() * ticksToRadians;
-    //vel_[0] =  K1.getS().value() * ticksToRadians;
-    //vel_[1] = -K2.getS().value() * ticksToRadians;
-
+    while (serial.available() > 0) {
+      std::stringstream line(serial.readline());
+      std::string lpos, rpos, lvel, rvel;
+      std::getline(line, lpos, ' ');
+      std::getline(line, lvel, ' ');
+      std::getline(line, rpos, ' ');
+      std::getline(line, rvel);
+      pos[0] = stod(lpos);
+      pos[1] = stod(rpos);
+      vel[0] = stod(lvel);
+      vel[1] = stod(rvel);
+      ROS_INFO_STREAM("States for joints: " << pos[0] << ", " << pos[1] << ", " << vel[0] << ", " << vel[1]);
+    }
   }
 
   void write(){
