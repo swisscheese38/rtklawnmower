@@ -7,13 +7,12 @@
 #define PIN_RIGHT_PWM 6 // PWM Speed Control
 #define PIN_RIGHT_DIR 7 // Direction Control
 
-#define ENC_TICKS_PER_ROUND 456.0; // Num of ticks per revolution
-#define FREQ_ENC_SAMPLING 5; // Encoder sampling frequency in Hz
-#define FREQ_ENC_OUTPUT 2; // Encoder feedback output frequency in Hz
+#define PWM_ADJUST_FREQ_EPSILON 2 // How close the curr and target should be 
+#define FREQ_ENC_SAMPLING 5 // Encoder sampling frequency in Hz
+#define FREQ_ENC_OUTPUT 5 // Encoder feedback output frequency in Hz
 
-unsigned int  encSamplingPeriodMillis = 1000/FREQ_ENC_OUTPUT;
+unsigned int  encSamplingPeriodMillis = 1000/FREQ_ENC_SAMPLING;
 unsigned int  encOutputPeriodMillis = 1000/FREQ_ENC_OUTPUT;
-float         radPerTick = TWO_PI/ENC_TICKS_PER_ROUND;
 
 long          leftEncLastTicks;
 long          rightEncLastTicks;
@@ -25,16 +24,18 @@ long          rightEncLastSampleTicks;
 unsigned long leftEncLastSampleMillis;
 unsigned long rightEncLastSampleMillis;
 
-float         leftEncFreq;
-float         rightEncFreq;
+int           leftEncCurrFreq;
+int           rightEncCurrFreq;
+int           leftEncTargetFreq;
+int           rightEncTargetFreq;
 
 String        inputBuffer = "";
 bool          inputBufferComplete = false;
 
 unsigned long lastEncOutputMillis;
 
-float         leftSpeed;
-float         rightSpeed;
+int           leftSpeed;
+int           rightSpeed;
 
 void setup() {
   Serial.begin(USB_BAUDRATE);
@@ -66,59 +67,69 @@ void loop() {
   // handle speed input
   if (inputBufferComplete) {
     int delimPos = inputBuffer.indexOf(" ");
-    float lSpeed = inputBuffer.substring(0, delimPos).toFloat();
-    float rSpeed = inputBuffer.substring(delimPos).toFloat();
-    if (-1 <= lSpeed && lSpeed <= 1) {
-      leftSpeed = lSpeed;
-      digitalWrite(PIN_LEFT_DIR, (leftSpeed > 0) ? LOW : HIGH);
-      analogWrite(PIN_LEFT_PWM, abs(leftSpeed) * 255.0);
-    }
-    if (-1 <= rSpeed && rSpeed <= 1) {
-      rightSpeed = rSpeed;
-      digitalWrite(PIN_RIGHT_DIR, (rightSpeed > 0) ? LOW : HIGH);
-      analogWrite(PIN_RIGHT_PWM, abs(rightSpeed) * 255.0);
-    }
+    leftEncTargetFreq = inputBuffer.substring(0, delimPos).toFloat();
+    rightEncTargetFreq = inputBuffer.substring(delimPos).toFloat();
     inputBuffer = "";
     inputBufferComplete = false;
   }
 
-  // calculate left tick frequency
+  // calculate left tick frequency and potentially adjust pwm
   if (leftEncLastSampleMillis + encSamplingPeriodMillis < currMillis) {
     int tickDiff = leftEncLastTicks - leftEncLastSampleTicks;
     int millisDiff = leftEncLastMillis - leftEncLastSampleMillis;
     if (tickDiff == 0 || millisDiff == 0) {
-      leftEncFreq = 0;
+      leftEncCurrFreq = 0;
       leftEncLastSampleMillis = currMillis;
     } else {
-      leftEncFreq = 1000.0 * float(tickDiff) / float(millisDiff);
+      leftEncCurrFreq = 1000.0 * float(tickDiff) / float(millisDiff);
       leftEncLastSampleMillis = leftEncLastMillis;
     }
     leftEncLastSampleTicks = leftEncLastTicks;
+
+    float leftEncFreqDiff = leftEncTargetFreq - leftEncCurrFreq;
+    if (PWM_ADJUST_FREQ_EPSILON < abs(leftEncFreqDiff)) {
+      leftSpeed += constrain(leftEncFreqDiff / 3.0, -20, 20);
+      leftSpeed = constrain(leftSpeed, -255, 255);
+      digitalWrite(PIN_LEFT_DIR, (leftSpeed > 0) ? LOW : HIGH);
+      analogWrite(PIN_LEFT_PWM, abs(leftSpeed));
+    }
   }
 
-  // calculate right tick frequency
+  // calculate right tick frequency and potentially adjust pwm
   if (rightEncLastSampleMillis + encSamplingPeriodMillis < currMillis) {
     int tickDiff = rightEncLastTicks - rightEncLastSampleTicks;
     int millisDiff = rightEncLastMillis - rightEncLastSampleMillis;
     if (tickDiff == 0 || millisDiff == 0) {
-      rightEncFreq = 0;
+      rightEncCurrFreq = 0;
       rightEncLastSampleMillis = currMillis;
     } else {
-      rightEncFreq = 1000.0 * float(tickDiff) / float(millisDiff);
+      rightEncCurrFreq = 1000.0 * float(tickDiff) / float(millisDiff);
       rightEncLastSampleMillis = rightEncLastMillis;
     }
     rightEncLastSampleTicks = rightEncLastTicks;
+
+    float rightEncFreqDiff = rightEncTargetFreq - rightEncCurrFreq;
+    if (PWM_ADJUST_FREQ_EPSILON < abs(rightEncFreqDiff)) {
+      rightSpeed += constrain(rightEncFreqDiff / 3.0, -20, 20);
+      rightSpeed = constrain(rightSpeed, -255, 255);
+      digitalWrite(PIN_RIGHT_DIR, (rightSpeed > 0) ? LOW : HIGH);
+      analogWrite(PIN_RIGHT_PWM, abs(rightSpeed));
+    }
   }
-  
+
   // output encoder feedback
   if (lastEncOutputMillis + encOutputPeriodMillis < currMillis) {
-    Serial.print(radPerTick*leftEncLastTicks);
+    Serial.print(leftEncLastTicks);
     Serial.print(" ");
-    Serial.print(radPerTick*leftEncFreq);
+    Serial.print(leftEncCurrFreq);
     Serial.print(" ");
-    Serial.print(radPerTick*rightEncLastTicks);
+    Serial.print(rightEncLastTicks);
     Serial.print(" ");
-    Serial.println(radPerTick*rightEncFreq);
+    Serial.print(rightEncCurrFreq);
+    Serial.print(" / ");
+    Serial.print(leftSpeed);
+    Serial.print(" ");
+    Serial.println(rightSpeed);
     lastEncOutputMillis = currMillis;
   }
 }
