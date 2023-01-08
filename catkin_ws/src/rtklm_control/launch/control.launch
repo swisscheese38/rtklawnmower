@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Robot description -->
+  <include file="$(find rtklm_description)/launch/description.launch" />
+
+  <!-- Load controller configuration -->
+  <rosparam command="load" file="$(find rtklm_control)/config/control.yaml" />
+  <remap from="/diff_drive_controller/cmd_vel" to="/cmd_vel"/>
+
+  <!-- Spawn controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen" 
+     args="joint_state_controller diff_drive_controller"/>  
+
+  <!-- Custom Arduino Hardware Interface -->
+  <include file="$(find rtklm_hardware)/launch/hardware.launch" />
+
+</launch>

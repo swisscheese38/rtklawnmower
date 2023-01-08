@@ -31,18 +31,16 @@
         <origin xyz="${joint_offset}" rpy="0 0 0"/>
         <limit effort="100" velocity="100"/>
     </joint>
-
+<!--
     <transmission name="${prefix}_wheel_transmission">
         <type>transmission_interface/SimpleTransmission</type>
         <actuator name="${prefix}_wheel_motor">
             <mechanicalReduction>1</mechanicalReduction>
-	    <hardwareInterface>rtklm_hardware_interface/RtklmInterface</hardwareInterface>
         </actuator>
         <joint name="${prefix}_wheel_joint">
-            <hardwareInterface>rtklm_hardware_interface/RtklmInterface</hardwareInterface>
         </joint>
     </transmission>
-
+-->
     <gazebo reference="${prefix}_wheel">
       <mu1 value="1.0"/>
       <mu2 value="1.0"/>

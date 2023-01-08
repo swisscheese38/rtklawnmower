@@ -3,23 +3,25 @@
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
 #include <serial/serial.h>
+#include <math.h>
+#include <string.h>
 
 class RtklmInterface : public hardware_interface::RobotHW {
 
 public:
   RtklmInterface(std::string port, unsigned long baud) {
 
-    serial.setPort(port);
     try {
-        serial.open();
+        arduino.setPort(port);
+        arduino.setBaudrate(baud);
+        serial::Timeout to = serial::Timeout::simpleTimeout(1000);
+        arduino.setTimeout(to);
+        arduino.open();
     } catch(serial::IOException &err) {
-        ROS_ERROR_STREAM("Connection failed with port: " << serial.getPort());
+        ROS_ERROR_STREAM("Connection failed with port: " << arduino.getPort());
         ros::shutdown();
     }
     ROS_INFO("Connection established with Robot");
-    serial.setBaudrate(baud);
-    serial::Timeout to = serial::Timeout::simpleTimeout(500);
-    serial.setTimeout(to);
 
     hardware_interface::JointStateHandle state_handle_1("left_wheel_joint", &pos[0], &vel[0], &eff[0]);
     jnt_state_interface.registerHandle(state_handle_1);
@@ -38,37 +40,57 @@ public:
     registerInterface(&jnt_vel_interface);
   }
 
-  void read(){
-    while (serial.available() > 0) {
-      std::stringstream line(serial.readline());
+  void read() {
+    readMutex.lock();
+    while (arduino.available() > 0) {
+      std::string line = arduino.readline();
+      ROS_INFO_STREAM("Read from hardware: " << line);
+      std::stringstream lineBuffer(line);
       std::string lpos, rpos, lvel, rvel;
-      std::getline(line, lpos, ' ');
-      std::getline(line, lvel, ' ');
-      std::getline(line, rpos, ' ');
-      std::getline(line, rvel);
-      pos[0] = stod(lpos);
-      pos[1] = stod(rpos);
-      vel[0] = stod(lvel);
-      vel[1] = stod(rvel);
-      ROS_INFO_STREAM("States for joints: " << pos[0] << ", " << pos[1] << ", " << vel[0] << ", " << vel[1]);
+      std::getline(lineBuffer, lpos, ' ');
+      std::getline(lineBuffer, lvel, ' ');
+      std::getline(lineBuffer, rpos, ' ');
+      std::getline(lineBuffer, rvel, ' ');
+      try {
+        pos[0] = ticksToRadians * std::stod(lpos);
+        pos[1] = ticksToRadians * std::stod(rpos);
+        vel[0] = ticksToRadians * std::stod(lvel);
+        vel[1] = ticksToRadians * std::stod(rvel);
+      } catch(std::invalid_argument&) {
+        ROS_ERROR_STREAM("Bad line received: " << line);
+        //ros::shutdown();
+      }
     }
+    readMutex.unlock();
   }
 
-  void write(){
-    ROS_INFO_STREAM("Commands for joints: " << cmd[0] << ", " << cmd[1]);
+  void write() {
     //send commands to motors
-    //serial.write(cmd[0] << " " << cmd[1] << "\n")
+    writeMutex.lock();
+    std::ostringstream out;
+    out.precision(0);
+    out << std::fixed << cmd[0] * radiansToTicks;
+    out << " ";
+    out << std::fixed << cmd[1] * radiansToTicks;
+    out << "\n";
+    std::string s = out.str();
+    ROS_INFO_STREAM("Command for joints: " << s);
+    arduino.write(s);
+    writeMutex.unlock();
   }
 
 private:
-  serial::Serial serial;
+  serial::Serial arduino;
+  std::mutex writeMutex;
+  std::mutex readMutex;
   hardware_interface::JointStateInterface jnt_state_interface;
   hardware_interface::VelocityJointInterface jnt_vel_interface;
   double cmd[2] = {0,0};
   double pos[2] = {0,0};
   double vel[2] = {0,0};
   double eff[2] = {0,0};
-
+  double ticksToRadians = (2.0*M_PI)/456.0;
+  double radiansToTicks = 1.0/ticksToRadians;
 };
 
 int main(int argc, char **argv)
@@ -83,7 +105,7 @@ int main(int argc, char **argv)
   RtklmInterface robot(port, baud);
   controller_manager::ControllerManager cm(&robot, nh);
 
-  ros::Rate rate(10);
+  ros::Rate rate(5);
   ros::AsyncSpinner spinner(1);
   spinner.start();
 

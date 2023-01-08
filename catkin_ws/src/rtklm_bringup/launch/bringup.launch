@@ -1,0 +1,6 @@
+<launch>
+
+    <!-- Start control nodes -->
+    <include file="$(find rtklm_control)/launch/control.launch"/>
+
+</launch>
