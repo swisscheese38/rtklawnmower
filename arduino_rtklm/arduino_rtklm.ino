@@ -59,7 +59,13 @@ void loop() {
     if (inChar == '\n') {
       int delimPos = inputBuffer.indexOf(" ");
       leftSetpoint = inputBuffer.substring(0, delimPos).toDouble();
+      if (35 > abs(leftSetpoint)) {
+        leftSetpoint = 0;
+      }
       rightSetpoint = inputBuffer.substring(delimPos).toDouble();
+      if (35 > abs(rightSetpoint)) {
+        rightSetpoint = 0;
+      }
       inputBuffer = "";
     }
   }
@@ -77,6 +83,9 @@ void loop() {
     leftCumError += leftError * elapsedTime; // I
     double leftRateError = (leftError - leftLastError) / elapsedTime; // D
     double leftOutput = (kp * leftError) + (ki * leftCumError) + (kd * leftRateError);
+    if (15 > abs(leftOutput) && leftSetpoint == 0) {
+      leftOutput = 0;
+    }
     leftLastError = leftError;
     analogWrite(PIN_LEFT_PWM, constrain(abs(leftOutput), 0, 255));
     digitalWrite(PIN_LEFT_DIR, (leftOutput > 0) ? LOW : HIGH);
@@ -86,6 +95,9 @@ void loop() {
     rightCumError += rightError * elapsedTime; // I
     double rightRateError = (rightError - rightLastError) / elapsedTime; // D
     double rightOutput = (kp * rightError) + (ki * rightCumError) + (kd * rightRateError);
+    if (15 > abs(rightOutput) && rightSetpoint == 0) {
+      rightOutput = 0;
+    }
     rightLastError = rightError;
     analogWrite(PIN_RIGHT_PWM, constrain(abs(rightOutput), 0, 255));
     digitalWrite(PIN_RIGHT_DIR, (rightOutput > 0) ? LOW : HIGH);
@@ -94,6 +106,10 @@ void loop() {
     Serial.print(leftInput);
     Serial.print(" ");
     Serial.print(rightInput);
+    Serial.print(" / ");
+    Serial.print(leftOutput);
+    Serial.print(" ");
+    Serial.print(rightOutput);
     Serial.println();
     
     nextSamplingMillis += elapsedTime;
