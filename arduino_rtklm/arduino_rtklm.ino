@@ -7,22 +7,26 @@
 #define PIN_RIGHT_PWM 10 // PWM Speed Control
 #define PIN_RIGHT_DIR 7 // Direction Control
 
-#define SAMPLING_FREQUENCY 10 // Encoder sampling frequency in Hz
+#define CONTROL_LOOP_FREQUENCY 5 // Encoder sampling frequency in Hz
+#define CONTROL_LOOP_PERIOD_MS (1000/CONTROL_LOOP_FREQUENCY)
 
 #define PWM_TICK_RATIO (250.0/1400.0) // Approximate linear ratio of tick frequency to pwm value 
 
 String inputBuffer = "";
 
 unsigned long lastSamplingMillis = 0;
-unsigned long nextSamplingMillis = 0;
 
 volatile int leftTicks = 0;
 volatile unsigned long leftTicksLastMillis = 0;
+int leftDir = 0;
+double leftInput = 0;
 double leftSetpoint = 0;
 double leftOutput = 0;
 
 volatile int rightTicks = 0;
 volatile unsigned long rightTicksLastMillis = 0;
+int rightDir = 0;
+double rightInput = 0;
 double rightSetpoint = 0;
 double rightOutput = 0;
 
@@ -56,50 +60,74 @@ void loop() {
     inputBuffer += inChar;
     if (inChar == '\n') {
       int delimPos = inputBuffer.indexOf(" ");
-      leftSetpoint = inputBuffer.substring(0, delimPos).toDouble();
-      rightSetpoint = inputBuffer.substring(delimPos).toDouble();;
+      double leftVel = inputBuffer.substring(0, delimPos).toDouble();
+      double rightVel = inputBuffer.substring(delimPos).toDouble();
+      inputBuffer = "";
+
+      // snap too low speeds to zero
+      leftVel = (abs(leftVel) < 80) ? 0 : leftVel;
+      rightVel = (abs(rightVel) < 80) ? 0 : rightVel;
+      
+      // only stop and don't change direction when going too fast
+      if (leftDir * leftVel < 0 && abs(leftInput) > 100) {
+        leftSetpoint = 0;
+      } else {
+        leftSetpoint = leftVel;
+        leftDir = constrain(leftVel, -1, +1);
+      }
+      if (rightDir * rightVel < 0 && abs(rightInput) > 100) {
+        rightSetpoint = 0;
+      } else {
+        rightSetpoint = rightVel;
+        rightDir = constrain(rightVel, -1, +1);
+      }
+      
+      // set PWM outputs to approximate values
       leftOutput = leftSetpoint * PWM_TICK_RATIO;
       rightOutput = rightSetpoint * PWM_TICK_RATIO;
-      inputBuffer = "";
     }
   }
 
-  if (lastSamplingMillis + (1000/SAMPLING_FREQUENCY) < millis()) {
+  if (lastSamplingMillis + CONTROL_LOOP_PERIOD_MS < millis()) {
     unsigned long currSamplingMillis = millis();
 
     // calculate tick frequencies and reset counters
-    double leftInput = 0;
     if (leftTicks > 0) {
-      leftInput = leftTicks * (1000.0 / (leftTicksLastMillis - lastSamplingMillis));
+      leftInput = leftDir * leftTicks * (1000.0 / (leftTicksLastMillis - lastSamplingMillis));
       leftTicks = 0;
+    } else {
+      leftInput = 0;
     };
-    double rightInput = 0;
     if (rightTicks > 0) {
-      rightInput = rightTicks * (1000.0 / (rightTicksLastMillis - lastSamplingMillis));
+      rightInput = rightDir * rightTicks * (1000.0 / (rightTicksLastMillis - lastSamplingMillis));
       rightTicks = 0;
-    };
+    } else {
+      rightInput = 0;
+    }
     
-    // fine tune PWMs if necessary
+    // fine adjust PWMs if necessary
     double leftError = leftSetpoint - leftInput;
-    if (10 < abs(leftError)) {
+    if (5 < abs(leftError)) {
       leftOutput += constrain(leftError, -1, +1);
     }
     double rightError = rightSetpoint - rightInput;
-    if (10 < abs(rightError)) {
+    if (5 < abs(rightError)) {
       rightOutput += constrain(rightError, -1, +1);
     }
 
     // avoid close to zero PWMs
     if (abs(leftOutput) < 15) {
-      leftOutput = (leftSetpoint == 0) ? 0 : 15;
+      leftOutput = (leftSetpoint == 0) ? 0 : constrain(leftOutput, -1, +1) * 15;
     }
     if (abs(rightOutput) < 15) {
-      rightOutput = (rightSetpoint == 0) ? 0 : 15;
+      rightOutput = (rightSetpoint == 0) ? 0 : constrain(rightOutput, -1, +1) * 15;
     }
     
-    // Engage new PWM values
-    analogWrite(PIN_LEFT_PWM, leftOutput);
-    analogWrite(PIN_RIGHT_PWM, rightOutput);
+    // Engage new PWM values and direction
+    analogWrite(PIN_LEFT_PWM, constrain(abs(leftOutput), 0, 255));
+    analogWrite(PIN_RIGHT_PWM, constrain(abs(rightOutput), 0, 255));
+    digitalWrite(PIN_LEFT_DIR, leftDir > 0 ? LOW : HIGH);
+    digitalWrite(PIN_RIGHT_DIR, rightDir > 0 ? LOW : HIGH);
 
     // output encoder feedback
     Serial.print(leftInput);
