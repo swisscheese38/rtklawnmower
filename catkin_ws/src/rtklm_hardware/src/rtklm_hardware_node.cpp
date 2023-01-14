@@ -46,16 +46,14 @@ public:
       std::string line = arduino.readline();
       ROS_INFO_STREAM("Read from hardware: " << line);
       std::stringstream lineBuffer(line);
-      std::string lpos, rpos, lvel, rvel;
-      std::getline(lineBuffer, lpos, ' ');
+      std::string lvel, rvel;
       std::getline(lineBuffer, lvel, ' ');
-      std::getline(lineBuffer, rpos, ' ');
       std::getline(lineBuffer, rvel, ' ');
       try {
-        pos[0] = ticksToRadians * std::stod(lpos);
-        pos[1] = ticksToRadians * std::stod(rpos);
-        vel[0] = ticksToRadians * std::stod(lvel);
-        vel[1] = ticksToRadians * std::stod(rvel);
+        //pos[0] = ticksToRadians * std::stod(lpos);
+        //pos[1] = ticksToRadians * std::stod(rpos);
+        vel[0] = -(ticksToRadians * std::stod(lvel));
+        vel[1] = +(ticksToRadians * std::stod(rvel));
       } catch(std::invalid_argument&) {
         ROS_ERROR_STREAM("Bad line received: " << line);
         //ros::shutdown();
@@ -69,9 +67,9 @@ public:
     writeMutex.lock();
     std::ostringstream out;
     out.precision(0);
-    out << std::fixed << cmd[0] * radiansToTicks;
+    out << std::fixed << -(cmd[0] * radiansToTicks);
     out << " ";
-    out << std::fixed << cmd[1] * radiansToTicks;
+    out << std::fixed << +(cmd[1] * radiansToTicks);
     out << "\n";
     std::string s = out.str();
     ROS_INFO_STREAM("Command for joints: " << s);
@@ -89,7 +87,7 @@ private:
   double pos[2] = {0,0};
   double vel[2] = {0,0};
   double eff[2] = {0,0};
-  double ticksToRadians = (2.0*M_PI)/456.0;
+  double ticksToRadians = (2.0*M_PI)/912.0;
   double radiansToTicks = 1.0/ticksToRadians;
 };
 
