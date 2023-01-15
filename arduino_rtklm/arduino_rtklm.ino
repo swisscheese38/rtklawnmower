@@ -15,6 +15,7 @@
 String inputBuffer = "";
 
 unsigned long lastSamplingMillis = 0;
+unsigned long lastInputMillis = 0;
 
 volatile int leftTicks = 0;
 volatile unsigned long leftTicksLastMillis = 0;
@@ -36,6 +37,7 @@ void setup() {
   pinMode(PIN_RIGHT_PWM, OUTPUT);
   pinMode(PIN_LEFT_ENC, INPUT_PULLUP);
   pinMode(PIN_RIGHT_ENC, INPUT_PULLUP);
+  pinMode(LED_BUILTIN, OUTPUT);
   analogWrite(PIN_LEFT_PWM, 0);
   analogWrite(PIN_RIGHT_PWM, 0);
   attachInterrupt(digitalPinToInterrupt(PIN_LEFT_ENC), onLeftEncTick, CHANGE);
@@ -59,6 +61,7 @@ void loop() {
     char inChar = (char) Serial.read();
     inputBuffer += inChar;
     if (inChar == '\n') {
+      lastInputMillis = millis();
       int delimPos = inputBuffer.indexOf(" ");
       double leftVel = inputBuffer.substring(0, delimPos).toDouble();
       double rightVel = inputBuffer.substring(delimPos).toDouble();
@@ -87,6 +90,9 @@ void loop() {
       rightOutput = rightSetpoint * PWM_TICK_RATIO;
     }
   }
+
+  // blink internal LED after speed input
+  digitalWrite(LED_BUILTIN, 100 > (millis() - lastInputMillis) ? HIGH : LOW);
 
   if (lastSamplingMillis + CONTROL_LOOP_PERIOD_MS < millis()) {
     unsigned long currSamplingMillis = millis();
