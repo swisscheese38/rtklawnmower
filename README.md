@@ -7,18 +7,28 @@ Work in progress. Inspired by https://openmower.de/
 * Lawn Mower: ZSA Zuchetti Ambrogio L15 Deluxe
 * Computer: Raspberry Pi 4 (8GB)
 * Microcontroller: Arduino Nano
-* Motor driver: ZS-X11H V2
-* GPS Device: Ardusimple Simplertk2b
-* Some resistors and cables
+* Motor drivers: ZS-X11H V2
+* GPS Devices: Ardusimple Simplertk2b
+* IMU: MPU9250
+* Battery: Einhell 18V 4Ah LI-ION Battery Pack
+* Voltage Convertor: KIS3R33S DC-DC 7-24V to 5V USB Step-Down
+* Some resistors (1 kOhm, 4.7 kOhm), transistors (2N2222) and cables
 
 ## Software
 
 * Ubuntu 20.04 Server
 * ROS1
-* Rover Packages: `git ros-noetic-ros-base gpsd gpsd–clients python-gps rtklib build-essential ros-noetic-controller-manager ros-noetic-joint-state-controller ros-noetic-serial ros-noetic-robot-state-publisher ros-noetic-xacro ros-noetic-diff-drive-controller ros-noetic-teleop-twist-keyboard`
+* Rover Packages: `git unzip ros-noetic-ros-base gpsd gpsd–clients python-gps rtklib build-essential ros-noetic-controller-manager ros-noetic-joint-state-controller ros-noetic-serial ros-noetic-robot-state-publisher ros-noetic-xacro ros-noetic-diff-drive-controller ros-noetic-teleop-twist-keyboard i2c-tools`
 * Development Node Packages: `git ros-noetic-desktop-full python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential ros-noetic-serial`
 
 ## Installation
+
+### Motor drivers
+
+We are using some cheap ZS-X11H V2 motor drivers to interact with the BLDC motors from the mower. The HAL encoders need to be pulled up high for the motor driver to be able to read the position values. Refer to [this guide](https://www.digikey.no/no/blog/using-bldc-hall-sensors-as-position-encoders-part-3) to get more information. I used 4.7 kOhm resistors. The direction has to be controlled by connecting a pin to ground. As this cannot be achieved with an Arduino out of the box, I used a 2N2222 transistor and a 1 kOhm resistor as suggested in [this forum entry](https://forums.raspberrypi.com/viewtopic.php?t=335218).
+
+### IMU
+We are using a MPU9250 for getting heading and acceleration information. The needed ROS packages are already added as Git submodules and will be built as part of the catkin_make build. The IMU is connected over I2C and the GIPO pins. Unfortunately Debian 20.04 in its packages currently supplies a version of pigpio that does not include `pigpio.h`. Therefore we have to download and build the library ourselves. For this you can follow the steps described [here](http://abyz.me.uk/rpi/pigpio/download.html).
 
 ### GPS
 
