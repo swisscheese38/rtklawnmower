@@ -5,6 +5,7 @@ Description=Pigpio daemon
 Type=forking
 PIDFile=pigpio.pid
 ExecStart=/usr/local/bin/pigpiod
+ExecStop=systemctl kill -s SIGKILL pigpiod
 
 [Install]
 WantedBy=multi-user.target
