@@ -45,7 +45,7 @@ The Simplertk2b is going to be connected to the Raspberry Pi through a serial co
 
 Furthermore Bluetooth needs to be disabled. This can be done by adding another line `dtoverlay=disable-bt` to the file `/boot/firmware/usercfg.txt`.
 
-Unfortuunately, as soon as the Simplertk2b is connected, the Pi will no longer boot. When hooking it up to a screen through HDMI you see that it is stuck before booting into Ubuntu. This is because the messages from the GPS module coming thrugh serial now interrupt the autoboot countdown. Therefore you need to adjust uboot as described [here](https://raspberrypi.stackexchange.com/questions/116074/how-can-i-disable-the-serial-console-on-distributions-that-use-u-boot/117950#117950).
+Unfortuunately, as soon as the Simplertk2b is connected, the Pi will no longer boot. When hooking it up to a screen through HDMI you see that it is stuck before booting into Ubuntu. This is because the messages from the GPS module coming thrugh serial now interrupt the autoboot countdown. Therefore we don't want to use u-boot anymore for bootloader but start into Ubuntu directly. As suggested in [Ubuntu's wiki for the Raspberry Pi](https://wiki.ubuntu.com/ARM/RaspberryPi#Change_the_bootloader) we do so by commenting out the `device_tree_address` section in `/boot/firmware/config.txt` and by exchanging the line `kernel=uboot_rpi_4.bin` for `kernel=vmlinuz` and by adding the line `initramfs initrd.img followkernel` just below.
 
 After rebooting you should now see (scrambled) messages coming in from the GPS device when you look at `less -f /dev/ttyAMA0`.
 
