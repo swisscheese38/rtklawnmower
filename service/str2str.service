@@ -5,7 +5,7 @@ StartLimitIntervalSec=300
 StartLimitBurst=5
 
 [Service]
-ExecStart=str2str -in ntrip://caster.centipede.fr:2101/GAECH#rtcm3 -out serial://ttyUSB0:115200:8:n:1:
+ExecStart=str2str -in ntrip://firstname.lastname-at-gmail.com@rtk2go.com:2101/CHE-Bern-Krauchthal#rtcm3 -out serial://ttyUSB1:115200:8:n:1:
 User=pi
 RestartSec=10
 Restart=always
