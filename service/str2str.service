@@ -1,5 +1,5 @@
 [Unit]
-Description=Stream NMEA messages from internet caster to serial USB
+Description=Stream RTCM correction messages from our base station to serial USB
 After=multi-user.target
 StartLimitIntervalSec=300
 StartLimitBurst=5

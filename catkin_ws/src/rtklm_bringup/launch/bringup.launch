@@ -1,5 +1,8 @@
 <launch>
 
+    <!-- Start sensors -->
+    <include file="$(find rtklm_bringup)/launch/gps.launch"/>
+
     <!-- Start control nodes -->
     <include file="$(find rtklm_control)/launch/control.launch"/>
 

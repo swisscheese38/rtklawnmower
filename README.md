@@ -18,7 +18,7 @@ Work in progress. Inspired by https://openmower.de/
 
 * Ubuntu 20.04 Server
 * ROS1
-* Rover Packages: `git unzip ros-noetic-ros-base gpsd gpsd–clients python-gps rtklib build-essential ros-noetic-controller-manager ros-noetic-joint-state-controller ros-noetic-serial ros-noetic-robot-state-publisher ros-noetic-xacro ros-noetic-diff-drive-controller ros-noetic-teleop-twist-keyboard i2c-tools`
+* Rover Packages: `git unzip ros-noetic-ros-base gpsd gpsd–clients python-gps rtklib build-essential ros-noetic-controller-manager ros-noetic-joint-state-controller ros-noetic-serial ros-noetic-robot-state-publisher ros-noetic-xacro ros-noetic-diff-drive-controller ros-noetic-teleop-twist-keyboard i2c-tools ros-noetic-gpsd-client`
 * Development Node Packages: `git ros-noetic-desktop-full python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential ros-noetic-serial`
 
 ## Installation
@@ -51,7 +51,7 @@ After rebooting you should now see (scrambled) messages coming in from the GPS d
 
 We are going to configure `gpsd` to provide the GPS data. For this to work `/etc/default/gpsd` has to be adjusted for `DEVICES="/dev/ttyAMA0"` and `GPSD_OPTIONS="-s 38400"` (select the serial speed baud rate that your ublox is currently configured). Afterwards restart the deamon with `sudo systemctl restart gpsd.socket`. Then finally you should see some GPS data when you open up `cgps`.
 
-In order for us to provide correction data to the rover, we are using a free NTRIP caster. Later we will add our own base station. The connection is done from the Raspberry Pi through USB to the second USB port of the Simplertk2b board that connects to the XBee socket, where we connect the RX/TX-pins according to [this guide on Youtube](https://youtu.be/qlkN70bBfFQ). Additionally, the Baudrate for UART1 is also increased to 115200 in Ucenter under UBX->CFG->PRT. The F9P configuration can be found in [gnss-rover.txt](gnss-rover.txt).
+In order for us to provide correction data to the rover, we are installing our own base station. If you live close enough to a reliable publicly available base station, you don't necessarily need to have your own base station. The connection is done from the Raspberry Pi through USB to the second USB port of the Simplertk2b board that connects to the XBee socket, where we connect the RX/TX-pins according to [this guide on Youtube](https://youtu.be/qlkN70bBfFQ). Additionally, the Baudrate for UART1 is also increased to 115200 in Ucenter under UBX->CFG->PRT. The F9P configuration can be found in [gnss-rover.txt](gnss-rover.txt).
 
 Afterwards, the configuration in `/etc/default/gpsd` has to be ajusted to reflect the changed baudrate `GPSD_OPTIONS="-s 115200"`. Restart the deamon with `sudo systemctl restart gpsd.socket` and you should again be able to see position data when you look at `cgps`. You will also notice that the rate of data coming in is much higher now as we increased it from 1Hz (factory setting) to 10Hz.
 
@@ -62,6 +62,8 @@ sudo systemctl daemon-reload
 sudo systemctl start str2str.service
 sudo systemctl enable str2str.service
 ```
+
+The two blue LEDs labelled `XBEE>GPS` and `GPS>XBEE` should now begin to flash, indicating that the Simplertk2b board is receiving correction messages. And after you position the rover with clear sight of the sky then the blue LED `NO RTK` should turn off after a while.
 
 ### ROS
 
