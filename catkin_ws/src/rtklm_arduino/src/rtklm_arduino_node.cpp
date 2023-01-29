@@ -40,8 +40,7 @@ public:
     registerInterface(&jnt_vel_interface);
   }
 
-  void read() {
-    readMutex.lock();
+  void read(const ros::Duration &period) {
     while (arduino.available() > 0) {
       std::string line = arduino.readline();
       ROS_INFO_STREAM("Read from Arduino: " << line);
@@ -50,21 +49,19 @@ public:
       std::getline(lineBuffer, lvel, ' ');
       std::getline(lineBuffer, rvel, ' ');
       try {
-        //pos[0] = ticksToRadians * std::stod(lpos);
-        //pos[1] = ticksToRadians * std::stod(rpos);
         vel[0] = -(ticksToRadians * std::stod(lvel));
         vel[1] = +(ticksToRadians * std::stod(rvel));
+        pos[0] += vel[0] / period.toSec();
+        pos[1] += vel[1] / period.toSec();
       } catch(std::invalid_argument&) {
         ROS_ERROR_STREAM("Bad line received: " << line);
         //ros::shutdown();
       }
     }
-    readMutex.unlock();
   }
 
   void write() {
     //send commands to motors
-    writeMutex.lock();
     std::ostringstream out;
     out.precision(0);
     out << std::fixed << -(cmd[0] * radiansToTicks);
@@ -74,13 +71,10 @@ public:
     std::string s = out.str();
     ROS_INFO_STREAM("Command for joints: " << s);
     arduino.write(s);
-    writeMutex.unlock();
   }
 
 private:
   serial::Serial arduino;
-  std::mutex writeMutex;
-  std::mutex readMutex;
   hardware_interface::JointStateInterface jnt_state_interface;
   hardware_interface::VelocityJointInterface jnt_vel_interface;
   double cmd[2] = {0,0};
@@ -109,7 +103,7 @@ int main(int argc, char **argv)
 
   while(ros::ok())
   {
-    robot.read();
+    robot.read(rate.expectedCycleTime());
     robot.write();
     cm.update(ros::Time::now(), rate.expectedCycleTime());
     rate.sleep();
