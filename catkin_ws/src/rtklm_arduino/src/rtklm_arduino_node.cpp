@@ -6,10 +6,10 @@
 #include <math.h>
 #include <string.h>
 
-class RtklmInterface : public hardware_interface::RobotHW {
+class RtklmArduinoInterface : public hardware_interface::RobotHW {
 
 public:
-  RtklmInterface(std::string port, unsigned long baud) {
+  RtklmArduinoInterface(std::string port, unsigned long baud) {
 
     try {
         arduino.setPort(port);
@@ -44,7 +44,7 @@ public:
     readMutex.lock();
     while (arduino.available() > 0) {
       std::string line = arduino.readline();
-      ROS_INFO_STREAM("Read from hardware: " << line);
+      ROS_INFO_STREAM("Read from Arduino: " << line);
       std::stringstream lineBuffer(line);
       std::string lvel, rvel;
       std::getline(lineBuffer, lvel, ' ');
@@ -95,12 +95,12 @@ int main(int argc, char **argv)
 {
   double x, y, theta;
   
-  ros::init(argc, argv, "rtklm_hardware_node");
+  ros::init(argc, argv, "rtklm_arduino_node");
   ros::NodeHandle nh;
  
   std::string port = "/dev/ttyUSB0";
   unsigned long baud = 9600;
-  RtklmInterface robot(port, baud);
+  RtklmArduinoInterface robot(port, baud);
   controller_manager::ControllerManager cm(&robot, nh);
 
   ros::Rate rate(5);

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(rtklm_hardware)
+project(rtklm_arduino)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -104,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-  LIBRARIES rtklm_hardware
+  LIBRARIES rtklm_arduino
 #   CATKIN_DEPENDS controller_manager hardware_interface serial
 #  DEPENDS system_lib
 )
@@ -121,8 +121,8 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(rtklm_hardware
-  src/rtklm_hardware_node.cpp
+add_library(rtklm_arduino
+  src/rtklm_arduino_node.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -133,10 +133,10 @@ add_library(rtklm_hardware
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(rtklm_hardware_node
-  src/rtklm_hardware_node.cpp
+add_executable(rtklm_arduino_node
+  src/rtklm_arduino_node.cpp
 )
-#target_link_libraries(rtklm_hardware_node rtklm_hardware ${catkin_LIBRARIES})
+#target_link_libraries(rtklm_arduino_node rtklm_arduino ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -146,10 +146,10 @@ add_executable(rtklm_hardware_node
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(rtklm_hardware_node ${PROJECT_NAME})
+add_dependencies(rtklm_arduino_node ${PROJECT_NAME})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(rtklm_hardware_node
+target_link_libraries(rtklm_arduino_node
   ${PROJECT_NAME} ${catkin_LIBRARIES}
 )
 
@@ -200,7 +200,7 @@ target_link_libraries(rtklm_hardware_node
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_rtklm_hardware.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_rtklm_arduino.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

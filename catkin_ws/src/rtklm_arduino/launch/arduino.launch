@@ -1,5 +1,5 @@
 <launch>
-    <node name="hardware_interface" pkg="rtklm_hardware" type="rtklm_hardware_node" output="screen">
+    <node name="rtklm_arduino_node" pkg="rtklm_arduino" type="rtklm_arduino_node">
         <rosparam>
             port: /dev/ttyUSB0
             baud: 9600
