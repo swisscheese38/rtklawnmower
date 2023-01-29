@@ -1,6 +1,8 @@
 <launch>
 
     <!-- Connect as a client to the GPSD deamon -->
-    <node pkg="gpsd_client" type="gpsd_client" name="gpsd_client" output="screen" />
+    <node pkg="gpsd_client" type="gpsd_client" name="gpsd_client">
+        <remap from="fix" to="gps/fix" />
+    </node>
 
 </launch>

@@ -1,0 +1,7 @@
+<launch>
+
+    <!-- Start Localication to fuse GPS, Odometry and IMU -->
+    <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node">
+    </node>
+
+</launch>
