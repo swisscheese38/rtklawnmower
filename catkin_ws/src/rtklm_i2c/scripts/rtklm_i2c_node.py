@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import rospy
+import smbus2
 
 if __name__ == '__main__':
     rospy.init_node('rtklm_i2c_node')

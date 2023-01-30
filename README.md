@@ -18,7 +18,7 @@ Work in progress. Inspired by https://openmower.de/
 
 * Ubuntu 20.04 Server
 * ROS1
-* Rover Packages: `git unzip ros-noetic-ros-base gpsd gpsd–clients python-gps rtklib build-essential ros-noetic-controller-manager ros-noetic-joint-state-controller ros-noetic-serial ros-noetic-robot-state-publisher ros-noetic-xacro ros-noetic-diff-drive-controller ros-noetic-teleop-twist-keyboard i2c-tools ros-noetic-gpsd-client ros-noetic-rosbridge-suite ros-noetic-robot-localization`
+* Rover Packages: `git unzip ros-noetic-ros-base gpsd gpsd–clients python-gps rtklib build-essential ros-noetic-controller-manager ros-noetic-joint-state-controller ros-noetic-serial ros-noetic-robot-state-publisher ros-noetic-xacro ros-noetic-diff-drive-controller ros-noetic-teleop-twist-keyboard i2c-tools ros-noetic-gpsd-client ros-noetic-rosbridge-suite ros-noetic-robot-localization python3-pip`
 * Development Node Packages: `git ros-noetic-desktop-full python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential ros-noetic-serial`
 
 ## Installation
@@ -64,6 +64,14 @@ sudo systemctl enable str2str.service
 ```
 
 The two blue LEDs labelled `XBEE>GPS` and `GPS>XBEE` should now begin to flash, indicating that the Simplertk2b board is receiving correction messages. And after you position the rover with clear sight of the sky then the blue LED `NO RTK` should turn off after a while.
+
+### Python and PIP
+
+According to [this article](https://people.eng.unimelb.edu.au/pbeuchat/asclinic/software/workflow_i2c.html#important-notes-on-i2c-usages-in-ros-nodes) you can access one I2C bus only exclusively from one ROS node. Because we want to communicate with several sensors over I2C we need to create our own ROS node that then communicates with all the sensors we want to have (IMU, TF, BMS, ...). We will make use of some existing packages which we will install using PIP.
+
+```
+pip3 install smbus2
+```
 
 ### ROS
 
