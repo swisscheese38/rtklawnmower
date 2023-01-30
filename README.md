@@ -28,7 +28,7 @@ Work in progress. Inspired by https://openmower.de/
 We are using some cheap ZS-X11H V2 motor drivers to interact with the BLDC motors from the mower. The HAL encoders need to be pulled up high for the motor driver to be able to read the position values. Refer to [this guide](https://www.digikey.no/no/blog/using-bldc-hall-sensors-as-position-encoders-part-3) to get more information. I used 4.7 kOhm resistors. The direction has to be controlled by connecting a pin to ground. As this cannot be achieved with an Arduino out of the box, I used a 2N2222 transistor and a 1 kOhm resistor as suggested in [this forum entry](https://forums.raspberrypi.com/viewtopic.php?t=335218).
 
 ### IMU
-We are using a MPU9250 for getting heading and acceleration information. The needed ROS packages are already added as Git submodules and will be built as part of the catkin_make build. The IMU is connected over I2C and the GIPO pins. Unfortunately Debian 20.04 in its packages currently supplies a version of pigpio that does not include `pigpio.h`. Therefore we have to download and build the library ourselves. For this you can follow the steps described [here](http://abyz.me.uk/rpi/pigpio/download.html).
+We are using a MPU9250 for getting heading and acceleration information. The IMU will be connected over I2C and the GPIO pins. Unfortunately Debian 20.04 in its packages currently supplies a version of pigpio that does not include `pigpio.h`. Therefore we have to download and build the library ourselves. For this you can follow the steps described [here](http://abyz.me.uk/rpi/pigpio/download.html).
 
 Afterwards, you need to add your `pi` user to the `gpio` group and register the `gpiod` deamon as a service with `systemd` to run on every start of the system:
 ```
