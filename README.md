@@ -70,7 +70,7 @@ The two blue LEDs labelled `XBEE>GPS` and `GPS>XBEE` should now begin to flash, 
 According to [this article](https://people.eng.unimelb.edu.au/pbeuchat/asclinic/software/workflow_i2c.html#important-notes-on-i2c-usages-in-ros-nodes) you can access one I2C bus only exclusively from one ROS node. Because we want to communicate with several sensors over I2C we need to create our own ROS node that then communicates with all the sensors we want to have (IMU, TF, BMS, ...). We will make use of some existing packages which we will install using PIP.
 
 ```
-pip3 install smbus2
+pip3 install imusensor smbus easydict
 ```
 
 ### ROS
