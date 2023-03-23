@@ -1,8 +1,0 @@
-<launch>
-
-    <!-- Start IMU -->
-    <node pkg="driver_mpu9250" type="driver_mpu9250_rpi" name="driver_mpu9250">
-        <param name="~/interrupt_gpio_pin" value="4" />
-    </node>
-
-</launch>
