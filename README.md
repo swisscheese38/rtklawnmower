@@ -9,7 +9,7 @@ Work in progress. Inspired by https://openmower.de/
 * Microcontroller: Arduino Nano
 * Motor drivers: ZS-X11H V2
 * GPS Devices: Ardusimple Simplertk2b
-* IMU: MPU9250
+* IMU: BNO055
 * Battery: Einhell 18V 4Ah LI-ION Battery Pack
 * Voltage Convertor: KIS3R33S DC-DC 7-24V to 5V USB Step-Down
 * Some resistors (1 kOhm, 4.7 kOhm), transistors (2N2222) and cables
@@ -18,26 +18,13 @@ Work in progress. Inspired by https://openmower.de/
 
 * Ubuntu 20.04 Server
 * ROS1
-* Rover Packages: `git unzip ros-noetic-ros-base gpsd gpsd–clients python-gps rtklib build-essential ros-noetic-controller-manager ros-noetic-joint-state-controller ros-noetic-serial ros-noetic-robot-state-publisher ros-noetic-xacro ros-noetic-diff-drive-controller ros-noetic-teleop-twist-keyboard i2c-tools ros-noetic-gpsd-client ros-noetic-rosbridge-suite ros-noetic-robot-localization python3-pip`
-* Development Node Packages: `git ros-noetic-desktop-full python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential ros-noetic-serial`
+* Installed Packages: `git unzip ros-noetic-ros-base gpsd gpsd–clients python-gps rtklib build-essential ros-noetic-controller-manager ros-noetic-joint-state-controller ros-noetic-serial ros-noetic-robot-state-publisher ros-noetic-xacro ros-noetic-diff-drive-controller ros-noetic-teleop-twist-keyboard i2c-tools ros-noetic-gpsd-client ros-noetic-rosbridge-suite ros-noetic-robot-localization python3-pip`
 
 ## Installation
 
 ### Motor drivers
 
 We are using some cheap ZS-X11H V2 motor drivers to interact with the BLDC motors from the mower. The HAL encoders need to be pulled up high for the motor driver to be able to read the position values. Refer to [this guide](https://www.digikey.no/no/blog/using-bldc-hall-sensors-as-position-encoders-part-3) to get more information. I used 4.7 kOhm resistors. The direction has to be controlled by connecting a pin to ground. As this cannot be achieved with an Arduino out of the box, I used a 2N2222 transistor and a 1 kOhm resistor as suggested in [this forum entry](https://forums.raspberrypi.com/viewtopic.php?t=335218).
-
-### IMU
-We are using a MPU9250 for getting heading and acceleration information. The IMU will be connected over I2C and the GPIO pins. Unfortunately Debian 20.04 in its packages currently supplies a version of pigpio that does not include `pigpio.h`. Therefore we have to download and build the library ourselves. For this you can follow the steps described [here](http://abyz.me.uk/rpi/pigpio/download.html).
-
-Afterwards, you need to add your `pi` user to the `gpio` group and register the `gpiod` deamon as a service with `systemd` to run on every start of the system:
-```
-sudo adduser pi gpio
-sudo cp /home/pi/rtklawnmower/service/pigpiod.service /lib/systemd/system/.
-sudo systemctl daemon-reload
-sudo systemctl start pigpiod.service
-sudo systemctl enable pigpiod.service
-```
 
 ### GPS
 
@@ -67,10 +54,10 @@ The two blue LEDs labelled `XBEE>GPS` and `GPS>XBEE` should now begin to flash, 
 
 ### Python and PIP
 
-According to [this article](https://people.eng.unimelb.edu.au/pbeuchat/asclinic/software/workflow_i2c.html#important-notes-on-i2c-usages-in-ros-nodes) you can access one I2C bus only exclusively from one ROS node. Because we want to communicate with several sensors over I2C we need to create our own ROS node that then communicates with all the sensors we want to have (IMU, TF, BMS, ...). We will make use of some existing packages which we will install using PIP.
+According to [this article](https://people.eng.unimelb.edu.au/pbeuchat/asclinic/software/workflow_i2c.html#important-notes-on-i2c-usages-in-ros-nodes) you can access one I2C bus only exclusively from one ROS node. Because we want to communicate with several sensors over I2C we need to create our own ROS node that then communicates with all the sensors we want to have (IMU, TOF, BMS, ...). We will make use of some existing packages which we will install using PIP.
 
 ```
-pip3 install imusensor smbus easydict
+pip3 install smbus
 ```
 
 ### ROS
