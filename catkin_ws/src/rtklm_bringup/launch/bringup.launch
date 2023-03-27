@@ -4,10 +4,15 @@
   <!-- Robot description -->
   <include file="$(find rtklm_description)/launch/description.launch" />
 
-  <!-- Start sensors -->
-  <!--include file="$(find rtklm_bringup)/launch/gps.launch"/-->
+  <!-- Start sensors/actors -->
+  <include file="$(find rtklm_bringup)/launch/gps.launch"/>
+  <include file="$(find rtklm_bringup)/launch/i2c.launch"/>
+  <include file="$(find rtklm_bringup)/launch/arduino.launch"/>
 
-  <!-- Start control nodes -->
-  <include file="$(find rtklm_control)/launch/control.launch"/>
+  <!-- Start DiffDrive controller -->
+  <include file="$(find rtklm_bringup)/launch/control.launch"/>
+
+  <!-- Fuse GPS, Wheel odometry and IMU -->
+  <include file="$(find rtklm_bringup)/launch/localization.launch"/>
 
 </launch>

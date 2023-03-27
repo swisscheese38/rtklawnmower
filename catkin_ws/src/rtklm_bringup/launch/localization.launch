@@ -1,7 +1,8 @@
 <launch>
 
-    <!-- Start Localication to fuse GPS, Odometry and IMU -->
-    <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node">
-    </node>
+  <!-- Run the EKF Localization node -->
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" output="screen">
+        <rosparam command="load" file="$(find rtklm_bringup)/config/ekf_localization.yaml"/>
+  </node>
 
 </launch>

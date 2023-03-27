@@ -15,7 +15,7 @@ if __name__ == '__main__':
     imuMsg = Imu()
     imu = BNO055(bus)
     
-    rate = rospy.Rate(1)
+    rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         
         imuMsg.header.stamp = rospy.get_rostime()

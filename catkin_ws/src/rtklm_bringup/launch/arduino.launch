@@ -1,0 +1,4 @@
+<launch>
+    <node name="arduino_node" pkg="rtklm_arduino" type="rtklm_arduino_node">
+    </node>
+</launch>
