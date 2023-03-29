@@ -2,7 +2,7 @@
 
   <!-- Run the EKF Localization node -->
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" output="screen">
-        <rosparam command="load" file="$(find rtklm_bringup)/config/ekf_localization.yaml"/>
+        <rosparam command="load" file="$(find rtklm_localization)/config/ekf_localization.yaml"/>
   </node>
 
 </launch>

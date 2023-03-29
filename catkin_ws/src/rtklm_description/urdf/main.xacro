@@ -1,10 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rtklawnmower">
 
-    <xacro:include filename="$(find rtklm_description)/urdf/chassis.xacro" />
-    <xacro:include filename="$(find rtklm_description)/urdf/wheel.xacro" />
-    <xacro:include filename="$(find rtklm_description)/urdf/casterwheel.xacro" />
-
     <!-- base_footprint is a fictitious link(frame) that is on the ground right below base_link origin -->
     <link name="base_footprint" />
     <joint name="base_footprint_joint" type="fixed">
@@ -14,13 +10,20 @@
     </joint>
 
     <!-- chassis is in base_link-->
+    <xacro:include filename="$(find rtklm_description)/urdf/chassis.xacro" />
     <xacro:chassis length="0.40" width="0.25" height="0.10" mass="4" offset="0.13 0.00 0.12" />
 
+    <!-- IMU -->
+    <xacro:include filename="$(find rtklm_description)/urdf/imu.xacro" />
+    <xacro:imu length="0.02" width="0.03" height="0.01" mass="0.01" offset="0.00 0.00 0.30" -->
+
     <!-- differential drive wheels -->
+    <xacro:include filename="$(find rtklm_description)/urdf/wheel.xacro" />
     <xacro:wheel prefix="right" radius="0.06" length="0.08" mass="0.5" joint_offset="0.0 -0.1 0.0" />
     <xacro:wheel prefix="left"  radius="0.06" length="0.08" mass="0.5" joint_offset="0.0  0.1 0.0" />
 
     <!-- caster wheels -->
+    <xacro:include filename="$(find rtklm_description)/urdf/casterwheel.xacro" />
     <xacro:casterwheel prefix="right" radius="0.04" mass="0.1" joint_offset="0.25 -0.10 -0.02" />
     <xacro:casterwheel prefix="left"  radius="0.04" mass="0.1" joint_offset="0.25  0.10 -0.02" />
 
