@@ -23,6 +23,8 @@ public:
     }
     ROS_INFO("Connection established with Robot");
 
+    // TODO make left_wheel_joint and right_wheel_joint parameters
+
     hardware_interface::JointStateHandle state_handle_1("left_wheel_joint", &pos[0], &vel[0], &eff[0]);
     jnt_state_interface.registerHandle(state_handle_1);
 
@@ -81,7 +83,7 @@ private:
   double pos[2] = {0,0};
   double vel[2] = {0,0};
   double eff[2] = {0,0};
-  double ticksToRadians = (2.0*M_PI)/912.0;
+  double ticksToRadians = (2.0*M_PI)/912.0; // TODO make this a parameter
   double radiansToTicks = 1.0/ticksToRadians;
 };
 
@@ -92,8 +94,8 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "rtklm_arduino_node");
   ros::NodeHandle nh;
  
-  std::string port = "/dev/ttyUSB0";
-  unsigned long baud = 9600;
+  std::string port = "/dev/ttyUSB0"; // TODO make this a parameter
+  unsigned long baud = 9600; // TODO make this a parameter
   RtklmArduinoInterface robot(port, baud);
   controller_manager::ControllerManager cm(&robot, nh);
 

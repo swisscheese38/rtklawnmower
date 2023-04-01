@@ -1,0 +1,12 @@
+<launch>
+
+    <!--
+        Input:
+            IMU data (over I2C Interface)
+        Output:
+            IMU data (over ROS Topic /imu/data)
+    -->
+    <node name="i2c_node" pkg="rtklm_i2c" type="rtklm_i2c_node.py">
+    </node>
+
+</launch>

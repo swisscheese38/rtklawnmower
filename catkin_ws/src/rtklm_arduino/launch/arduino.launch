@@ -1,0 +1,12 @@
+<launch>
+    <!--
+        Input:
+            Actual wheel velocities (over USB/TTY)
+            Target wheel velocities (over ROS velocity interface from diff_drive_controller)
+        Output:
+            Target wheel velocities (over USB/TTY)
+            Actual wheel positions (over ROS Topic /joint_states)
+    -->
+    <node name="arduino_node" pkg="rtklm_arduino" type="rtklm_arduino_node">
+    </node>
+</launch>

@@ -1,7 +1,0 @@
-<launch>
-
-    <!-- Start I2C Node (provides IMU) -->
-    <node name="i2c_node" pkg="rtklm_i2c" type="rtklm_i2c_node.py">
-    </node>
-
-</launch>

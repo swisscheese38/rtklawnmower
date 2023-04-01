@@ -5,4 +5,9 @@
   <arg name="model" value="$(find rtklm_description)/urdf/main.xacro"/>
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
 
+  <!-- Robot State Transforms -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+  </node>
+
+
 </launch>

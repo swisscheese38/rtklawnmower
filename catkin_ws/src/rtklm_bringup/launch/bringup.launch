@@ -6,13 +6,13 @@
 
   <!-- Start sensors/actors -->
   <include file="$(find rtklm_bringup)/launch/gps.launch"/>
-  <include file="$(find rtklm_bringup)/launch/i2c.launch"/>
-  <include file="$(find rtklm_bringup)/launch/arduino.launch"/>
+  <include file="$(find rtklm_i2c)/launch/i2c.launch"/>
+  <include file="$(find rtklm_arduino)/launch/arduino.launch"/>
 
   <!-- Start DiffDrive controller -->
   <include file="$(find rtklm_bringup)/launch/control.launch"/>
 
   <!-- Fuse GPS, Wheel odometry and IMU -->
-  <include file="$(find rtklm_localization)/launch/localization.launch"/>
+  <!--include file="$(find rtklm_localization)/launch/localization.launch"/-->
 
 </launch>

@@ -1,0 +1,8 @@
+# https://github.com/cra-ros-pkg/robot_localization/blob/noetic-devel/params/dual_ekf_navsat_example.yaml
+
+frequency: 10
+delay: 3.0
+magnetic_declination_radians: 0.0516  # For lat/long 47.01, 7.57
+yaw_offset: 1.570796327  # BNO055 IMU reads 0 facing magnetic north, not east
+zero_altitude: true
+publish_filtered_gps: true

@@ -15,7 +15,7 @@
 
     <!-- IMU -->
     <xacro:include filename="$(find rtklm_description)/urdf/imu.xacro" />
-    <xacro:imu length="0.02" width="0.03" height="0.01" mass="0.01" offset="0.00 0.00 0.30" -->
+    <xacro:imu length="0.03" width="0.02" height="0.01" mass="0.01" joint_offset="0.00 0.00 0.08" />
 
     <!-- differential drive wheels -->
     <xacro:include filename="$(find rtklm_description)/urdf/wheel.xacro" />
