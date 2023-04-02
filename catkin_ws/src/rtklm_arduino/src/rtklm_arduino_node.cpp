@@ -23,20 +23,26 @@ public:
     }
     ROS_INFO("Connection established with Robot");
 
-    // TODO make left_wheel_joint and right_wheel_joint parameters
+    std::string left_joint_name, right_joint_name;
+    ros::param::get("~left_joint_name", left_joint_name);
+    ros::param::get("~right_joint_name", right_joint_name);
+    double ticksPerRevolution;
+    ros::param::get("~ticksPerRevolution", ticksPerRevolution);
+    ticksToRadians = (2.0*M_PI)/ticksPerRevolution;
+    radiansToTicks = 1.0/ticksToRadians;
 
-    hardware_interface::JointStateHandle state_handle_1("left_wheel_joint", &pos[0], &vel[0], &eff[0]);
+    hardware_interface::JointStateHandle state_handle_1(left_joint_name, &pos[0], &vel[0], &eff[0]);
     jnt_state_interface.registerHandle(state_handle_1);
 
-    hardware_interface::JointStateHandle state_handle_2("right_wheel_joint", &pos[1], &vel[1], &eff[1]);
+    hardware_interface::JointStateHandle state_handle_2(right_joint_name, &pos[1], &vel[1], &eff[1]);
     jnt_state_interface.registerHandle(state_handle_2);
 
     registerInterface(&jnt_state_interface);
 
-    hardware_interface::JointHandle vel_handle_1(jnt_state_interface.getHandle("left_wheel_joint"), &cmd[0]);
+    hardware_interface::JointHandle vel_handle_1(jnt_state_interface.getHandle(left_joint_name), &cmd[0]);
     jnt_vel_interface.registerHandle(vel_handle_1);
 
-    hardware_interface::JointHandle vel_handle_2(jnt_state_interface.getHandle("right_wheel_joint"), &cmd[1]);
+    hardware_interface::JointHandle vel_handle_2(jnt_state_interface.getHandle(right_joint_name), &cmd[1]);
     jnt_vel_interface.registerHandle(vel_handle_2);
 
     registerInterface(&jnt_vel_interface);
@@ -83,23 +89,27 @@ private:
   double pos[2] = {0,0};
   double vel[2] = {0,0};
   double eff[2] = {0,0};
-  double ticksToRadians = (2.0*M_PI)/912.0; // TODO make this a parameter
-  double radiansToTicks = 1.0/ticksToRadians;
+  double ticksToRadians;
+  double radiansToTicks;
 };
 
 int main(int argc, char **argv)
 {
-  double x, y, theta;
-  
+
   ros::init(argc, argv, "rtklm_arduino_node");
   ros::NodeHandle nh;
  
-  std::string port = "/dev/usb-nano"; // TODO make this a parameter
-  unsigned long baud = 9600; // TODO make this a parameter
+  std::string port;
+  int baud;
+  int frequency;
+  ros::param::get("~usbPort", port);
+  ros::param::get("~usbBaudrate", baud);
+  ros::param::get("~frequency", frequency);
+
   RtklmArduinoInterface robot(port, baud);
   controller_manager::ControllerManager cm(&robot, nh);
 
-  ros::Rate rate(5);
+  ros::Rate rate(frequency);
   ros::AsyncSpinner spinner(1);
   spinner.start();
 

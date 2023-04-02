@@ -8,5 +8,15 @@
             Actual wheel positions (over ROS Topic /joint_states)
     -->
     <node name="arduino_node" pkg="rtklm_arduino" type="rtklm_arduino_node">
+
+        <param name="frequency" value="5" />
+
+        <param name="usbPort" value="/dev/usb-nano" />
+        <param name="usbBaudrate" value="9600" />
+
+        <param name="left_joint_name" value="left_wheel_joint" />
+        <param name="right_joint_name" value="right_wheel_joint" />
+        <param name="ticksPerRevolution" value="912.0" />
+
     </node>
 </launch>

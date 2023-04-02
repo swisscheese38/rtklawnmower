@@ -9,18 +9,18 @@ from rtklm_i2c.BNO055 import BNO055
 if __name__ == '__main__':
     rospy.init_node('rtklm_i2c_node')
     rospy.loginfo("rtklm_i2c_node started!")
-    bus = smbus.SMBus(1) # TODO Make this a parameter
+    bus = smbus.SMBus(rospy.get_param("~bus"))
 
     imuPub = rospy.Publisher('/imu/data', Imu, queue_size=10)
     imuMsg = Imu()
     imu = BNO055(bus)
     
     imu_data_seq_counter = 0
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(rospy.get_param("~frequency"))
     while not rospy.is_shutdown():
         
         imuMsg.header.stamp = rospy.get_rostime()
-        imuMsg.header.frame_id = "imu_link" # TODO Make this a parameter
+        imuMsg.header.frame_id = rospy.get_param("~imuFrameId")
         imuMsg.header.seq = imu_data_seq_counter
         imu_data_seq_counter += 1
 
