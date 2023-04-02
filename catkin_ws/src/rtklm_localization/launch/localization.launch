@@ -17,18 +17,22 @@
     (2) A second EKF instance that fuses the same data, but also fuses the transformed GPS data from (3).
     The second EKF produces the map->odom transform, but requires the odom->base_link transform from (1).
   -->
+  <!--
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
     <rosparam command="load" file="$(find rtklm_localization)/config/ekf_se_map.yaml" />
     <remap from="odometry/filtered" to="odometry/filtered_map"/>
   </node>
+  -->
 
   <!--
     (3) An instance of navsat_transform_node, which takes in GPS data and produces pose data that has been
     transformed into your robot's world frame (here, map). The node produces a map-frame state estimate. 
   -->
+  <!--
   <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true">
     <rosparam command="load" file="$(find rtklm_localization)/config/navsat_transform.yaml" />
     <remap from="odometry/filtered" to="odometry/filtered_map"/>
   </node>
+  -->
 
 </launch>

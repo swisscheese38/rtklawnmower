@@ -1,5 +1,5 @@
 frequency: 10
-sensor_timeout: 0.2
+sensor_timeout: 0.5
 two_d_mode: true
 print_diagnostics: true
 debug: false
