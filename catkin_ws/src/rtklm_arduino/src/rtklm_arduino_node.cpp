@@ -94,7 +94,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "rtklm_arduino_node");
   ros::NodeHandle nh;
  
-  std::string port = "/dev/ttyUSB0"; // TODO make this a parameter
+  std::string port = "/dev/usb-nano"; // TODO make this a parameter
   unsigned long baud = 9600; // TODO make this a parameter
   RtklmArduinoInterface robot(port, baud);
   controller_manager::ControllerManager cm(&robot, nh);

@@ -22,6 +22,33 @@ Work in progress. Inspired by https://openmower.de/
 
 ## Installation
 
+### udev rules for USB devices
+
+TO ensure that we have constant device names that we can use to access the different devices over USB, we create some udev rules. First we plugin the different devices one by one and identify vendor and product IDs for each of them by typing `lsusb` in between:
+
+```
+...
+Bus 001 Device 007: ID 0403:6015 Future Technology Devices International, Ltd Bridge(I2C/SPI/UART/FIFO)
+Bus 001 Device 008: ID 1a86:7523 QinHeng Electronics HL-340 USB-Serial adapter
+...
+```
+
+Then we can create a rule file `sudo vi /etc/udev/rules.d/91-usbdevices.rules` with the following content (adjust your idVendor and idProduct if necessary):
+
+```
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", SYMLINK+="usb-ardusimple"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", SYMLINK+="usb-nano"
+```
+
+Have the rules applied by typing `sudo udevadm trigger` and then check that the symlinks were actually created by issuing `ls -l /dev/ttyUSB* /dev/usb-*`:
+
+```
+crw-rw---- 1 root dialout 188, 0 Apr  2 07:07 /dev/ttyUSB0
+crw-rw---- 1 root dialout 188, 1 Apr  2 07:07 /dev/ttyUSB1
+lrwxrwxrwx 1 root root         7 Apr  2 07:07 /dev/usb-ardusimple -> ttyUSB0
+lrwxrwxrwx 1 root root         7 Apr  2 07:07 /dev/usb-nano -> ttyUSB1
+```
+
 ### Motor drivers
 
 We are using some cheap ZS-X11H V2 motor drivers to interact with the BLDC motors from the mower. The HAL encoders need to be pulled up high for the motor driver to be able to read the position values. Refer to [this guide](https://www.digikey.no/no/blog/using-bldc-hall-sensors-as-position-encoders-part-3) to get more information. I used 4.7 kOhm resistors. The direction has to be controlled by connecting a pin to ground. As this cannot be achieved with an Arduino out of the box, I used a 2N2222 transistor and a 1 kOhm resistor as suggested in [this forum entry](https://forums.raspberrypi.com/viewtopic.php?t=335218).
@@ -42,9 +69,27 @@ In order for us to provide correction data to the rover, we are installing our o
 
 Afterwards, the configuration in `/etc/default/gpsd` has to be ajusted to reflect the changed baudrate `GPSD_OPTIONS="-s 115200"`. Restart the deamon with `sudo systemctl restart gpsd.socket` and you should again be able to see position data when you look at `cgps`. You will also notice that the rate of data coming in is much higher now as we increased it from 1Hz (factory setting) to 10Hz.
 
-For sending the correction data, we use str2str, which doesn't have to be compiled ourselves but can simply be installed as an Ubuntu package with `sudo apt install rtklib`. As we want to have the data streamed to the Simplertk2b board at all times, we will install `str2str` as a systemd servie. Have a look at [str2str.service](str2str.service) and then install it as follows:
+For sending the correction data, we use str2str, which doesn't have to be compiled ourselves but can simply be installed as an Ubuntu package with `sudo apt install rtklib`. As we want to have the data streamed to the Simplertk2b board at all times, we will install `str2str` as a systemd servie. Create a file `sudo vi /lib/systemd/system/str2str.service` with the following content:
+
 ```
-sudo cp ~/rtklawnmower/service/str2str.service /lib/systemd/system/.
+[Unit]
+Description=Stream RTCM correction messages from our base station to serial USB
+After=multi-user.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+ExecStart=str2str -in ntrip://firstname.lastname-at-gmail.com@rtk2go.com:2101/CHE-Bern-Krauchthal#rtcm3 -out serial://usb-ardusimple:115200:8:n:1:
+User=pi
+RestartSec=10
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then install the service as follows:
+```
 sudo systemctl daemon-reload
 sudo systemctl start str2str.service
 sudo systemctl enable str2str.service
