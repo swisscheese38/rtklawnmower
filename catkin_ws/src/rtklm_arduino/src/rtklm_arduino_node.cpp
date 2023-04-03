@@ -49,6 +49,7 @@ public:
   }
 
   void read(const ros::Duration &period) {
+    //read speeds from motors
     while (arduino.available() > 0) {
       std::string line = arduino.readline();
       ROS_INFO_STREAM("Read from Arduino: " << line);
@@ -59,13 +60,12 @@ public:
       try {
         vel[0] = -(ticksToRadians * std::stod(lvel));
         vel[1] = +(ticksToRadians * std::stod(rvel));
-        pos[0] += vel[0] / period.toSec();
-        pos[1] += vel[1] / period.toSec();
       } catch(std::invalid_argument&) {
-        ROS_ERROR_STREAM("Bad line received: " << line);
-        //ros::shutdown();
+        ROS_WARN_STREAM("Bad line received: " << line);
       }
     }
+    pos[0] += (vel[0] * period.toSec());
+    pos[1] += (vel[1] * period.toSec());
   }
 
   void write() {
