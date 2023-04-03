@@ -92,7 +92,7 @@ void loop() {
   }
 
   // blink internal LED after speed input
-  digitalWrite(LED_BUILTIN, 100 > (millis() - lastInputMillis) ? HIGH : LOW);
+  digitalWrite(LED_BUILTIN, (CONTROL_LOOP_PERIOD_MS/2) > (millis() - lastInputMillis) ? HIGH : LOW);
 
   if (lastSamplingMillis + CONTROL_LOOP_PERIOD_MS < millis()) {
     unsigned long currSamplingMillis = millis();
