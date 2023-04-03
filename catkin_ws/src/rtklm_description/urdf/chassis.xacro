@@ -23,11 +23,6 @@
                      izz="${(1/12) * mass * (length*length + width*width)}" />
         </inertial>
     </link>
-    <gazebo reference="base_link">
-        <mu1>0.3</mu1>
-        <mu2>0.3</mu2>
-        <material>Gazebo/Green</material>
-    </gazebo>
 
   </xacro:macro>
 </robot>

@@ -29,11 +29,5 @@
         <child link="imu_link"/>
     </joint>
 
-    <gazebo reference="imu_link">
-        <mu1>0.3</mu1>
-        <mu2>0.3</mu2>
-        <material>Gazebo/Green</material>
-    </gazebo>
-
   </xacro:macro>
 </robot>

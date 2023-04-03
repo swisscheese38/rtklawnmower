@@ -41,15 +41,6 @@
         </joint>
     </transmission>
 -->
-    <gazebo reference="${prefix}_wheel">
-      <mu1 value="1.0"/>
-      <mu2 value="1.0"/>
-      <kp  value="10000000.0" />
-      <kd>100.0</kd>
-      <minDepth>0.001</minDepth>
-      <maxVel>0.1</maxVel>
-      <material>Gazebo/FlatBlack</material>
-    </gazebo>
 
   </xacro:macro>
 </robot>

@@ -29,12 +29,6 @@
         <child link="${prefix}_casterwheel"/>
         <origin xyz="${joint_offset}" rpy="0 0 0"/>
     </joint>
-        
-    <gazebo reference="${prefix}_casterwheel">
-        <mu1>0.0</mu1>
-        <mu2>0.0</mu2>
-        <material>Gazebo/FlatBlack</material>
-    </gazebo>
 
   </xacro:macro>
 </robot>

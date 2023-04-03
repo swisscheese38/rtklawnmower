@@ -24,8 +24,8 @@ public:
     ROS_INFO("Connection established with Robot");
 
     std::string left_joint_name, right_joint_name;
-    ros::param::get("~left_joint_name", left_joint_name);
-    ros::param::get("~right_joint_name", right_joint_name);
+    ros::param::get("~left_wheel", left_joint_name);
+    ros::param::get("~right_wheel", right_joint_name);
     double ticksPerRevolution;
     ros::param::get("~ticksPerRevolution", ticksPerRevolution);
     ticksToRadians = (2.0*M_PI)/ticksPerRevolution;

@@ -4,13 +4,9 @@ diff_drive_controller:
   right_wheel: right_wheel_joint
   pose_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
   twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
-  
+  publish_rate: 10
+  enable_odom_tf: false # will be fused together with IMU and GPS
+
 joint_state_controller:
   type: "joint_state_controller/JointStateController"
-  publish_rate: 50
-
-# do not enable - see https://github.com/ros-simulation/gazebo_ros_pkgs/issues/886
-#gazebo_ros_control:
-#  pid_gains:
-#    left_wheel_joint: {p: 100.0, i: 0.01, d: 10.0}
-#    right_wheel_joint: {p: 100.0, i: 0.01, d: 10.0}
+  publish_rate: 10

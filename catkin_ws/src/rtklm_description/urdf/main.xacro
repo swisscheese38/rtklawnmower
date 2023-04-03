@@ -27,10 +27,4 @@
     <xacro:casterwheel prefix="right" radius="0.04" mass="0.1" joint_offset="0.25 -0.10 -0.02" />
     <xacro:casterwheel prefix="left"  radius="0.04" mass="0.1" joint_offset="0.25  0.10 -0.02" />
 
-    <gazebo>
-        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-            <robotNamespace>/</robotNamespace>
-        </plugin>
-    </gazebo>
-
 </robot>
