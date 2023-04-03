@@ -7,7 +7,7 @@
 #define PIN_RIGHT_PWM 10 // PWM Speed Control
 #define PIN_RIGHT_DIR 7 // Direction Control
 
-#define CONTROL_LOOP_FREQUENCY 5 // Encoder sampling frequency in Hz
+#define CONTROL_LOOP_FREQUENCY 10 // Encoder sampling frequency in Hz
 #define CONTROL_LOOP_PERIOD_MS (1000/CONTROL_LOOP_FREQUENCY)
 
 #define PWM_TICK_RATIO (250.0/1400.0) // Approximate linear ratio of tick frequency to pwm value 
@@ -98,14 +98,16 @@ void loop() {
     unsigned long currSamplingMillis = millis();
 
     // calculate tick frequencies and reset counters
-    if (leftTicks > 0) {
-      leftInput = leftDir * leftTicks * (1000.0 / (leftTicksLastMillis - lastSamplingMillis));
+    unsigned long leftSamplingPeriod = leftTicksLastMillis - lastSamplingMillis;
+    if (leftTicks > 0 && leftSamplingPeriod > 0) {
+      leftInput = leftDir * leftTicks * (1000.0 / leftSamplingPeriod);
       leftTicks = 0;
     } else {
       leftInput = 0;
     };
-    if (rightTicks > 0) {
-      rightInput = rightDir * rightTicks * (1000.0 / (rightTicksLastMillis - lastSamplingMillis));
+    unsigned long rightSamplingPeriod = rightTicksLastMillis - lastSamplingMillis;
+    if (rightTicks > 0 && rightSamplingPeriod > 0) {
+      rightInput = rightDir * rightTicks * (1000.0 / rightSamplingPeriod);
       rightTicks = 0;
     } else {
       rightInput = 0;
