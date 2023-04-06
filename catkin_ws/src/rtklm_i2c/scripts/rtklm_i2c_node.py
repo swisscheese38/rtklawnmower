@@ -16,8 +16,33 @@ if __name__ == '__main__':
     imu = BNO055(bus)
     
     imu_data_seq_counter = 0
-    rate = rospy.Rate(rospy.get_param("~frequency"))
+    #rate = rospy.Rate(rospy.get_param("~frequency"))
+    rate = rospy.Rate(0.5)
     while not rospy.is_shutdown():
+
+        imu.readCalib()
+        if imu.status['sys'] > 0:
+            rospy.loginfo("Calibration status sys:  " + str(imu.status['sys']))
+        else:
+            rospy.logwarn("Calibration status sys:  " + str(imu.status['sys']))
+        if imu.status['gyro'] > 0:
+            rospy.loginfo("Calibration status gyro:  " + str(imu.status['gyro']))
+        else:
+            rospy.logwarn("Calibration status gyro:  " + str(imu.status['gyro']))
+        if imu.status['acc'] > 0:
+            rospy.loginfo("Calibration status acc:  " + str(imu.status['acc']))
+        else:
+            rospy.logwarn("Calibration status acc:  " + str(imu.status['acc']))
+        if imu.status['mag'] > 0:
+            rospy.loginfo("Calibration status mag:  " + str(imu.status['mag']))
+        else:
+            rospy.logwarn("Calibration status mag:  " + str(imu.status['mag']))
+
+        #imu.selfTest()
+        #rospy.loginfo("Self test result mcu:  " + str(imu.result['mcu']))
+        #rospy.loginfo("Self test result gyro: " + str(imu.result['gyro']))
+        #rospy.loginfo("Self test result acc:  " + str(imu.result['acc']))
+        #rospy.loginfo("Self test result mag:  " + str(imu.result['mag']))
         
         imuMsg.header.stamp = rospy.get_rostime()
         imuMsg.header.frame_id = rospy.get_param("~imuFrameId")
