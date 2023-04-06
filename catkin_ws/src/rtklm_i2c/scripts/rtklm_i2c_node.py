@@ -6,6 +6,9 @@ import smbus
 from sensor_msgs.msg import Imu
 from rtklm_i2c.BNO055 import BNO055
 
+def calculateNextCalibrationCheck():
+    return rospy.Time.now() + rospy.rostime.Duration(5)
+
 if __name__ == '__main__':
     rospy.init_node('rtklm_i2c_node')
     rospy.loginfo("rtklm_i2c_node started!")
@@ -15,39 +18,25 @@ if __name__ == '__main__':
     imuMsg = Imu()
     imu = BNO055(bus)
     
-    imu_data_seq_counter = 0
-    #rate = rospy.Rate(rospy.get_param("~frequency"))
-    rate = rospy.Rate(0.5)
+    rate = rospy.Rate(rospy.get_param("~frequency"))
+    nextCalibrationCheck = calculateNextCalibrationCheck()
+
     while not rospy.is_shutdown():
 
-        imu.readCalib()
-        if imu.status['sys'] > 0:
-            rospy.loginfo("Calibration status sys:  " + str(imu.status['sys']))
-        else:
-            rospy.logwarn("Calibration status sys:  " + str(imu.status['sys']))
-        if imu.status['gyro'] > 0:
-            rospy.loginfo("Calibration status gyro:  " + str(imu.status['gyro']))
-        else:
-            rospy.logwarn("Calibration status gyro:  " + str(imu.status['gyro']))
-        if imu.status['acc'] > 0:
-            rospy.loginfo("Calibration status acc:  " + str(imu.status['acc']))
-        else:
-            rospy.logwarn("Calibration status acc:  " + str(imu.status['acc']))
-        if imu.status['mag'] > 0:
-            rospy.loginfo("Calibration status mag:  " + str(imu.status['mag']))
-        else:
-            rospy.logwarn("Calibration status mag:  " + str(imu.status['mag']))
-
-        #imu.selfTest()
-        #rospy.loginfo("Self test result mcu:  " + str(imu.result['mcu']))
-        #rospy.loginfo("Self test result gyro: " + str(imu.result['gyro']))
-        #rospy.loginfo("Self test result acc:  " + str(imu.result['acc']))
-        #rospy.loginfo("Self test result mag:  " + str(imu.result['mag']))
+        # occasionally check calibration status
+        if nextCalibrationCheck < rospy.Time.now():
+            imu.readCalib()
+            for calibstatus_key, calibstatus_val in imu.status.items():
+                if calibstatus_val != 3:
+                    rospy.logwarn("IMU " + calibstatus_key + " not fully calibrated: " + str(calibstatus_val))
+            imu.selfTest()
+            for selftest_key, selftest_val in imu.result.items():
+                if selftest_val != 1:
+                    rospy.logwarn("IMU " + selftest_key + " didn't pass selftest: " + str(selftest_val))
+            nextCalibrationCheck = calculateNextCalibrationCheck()
         
         imuMsg.header.stamp = rospy.get_rostime()
         imuMsg.header.frame_id = rospy.get_param("~imuFrameId")
-        imuMsg.header.seq = imu_data_seq_counter
-        imu_data_seq_counter += 1
 
         imu.readGyro()
         imuMsg.angular_velocity.x = imu.gyro['x']

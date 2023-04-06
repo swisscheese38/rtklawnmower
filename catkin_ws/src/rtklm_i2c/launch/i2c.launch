@@ -6,7 +6,7 @@
         Output:
             IMU data (over ROS Topic /imu/data)
     -->
-    <node name="i2c_node" pkg="rtklm_i2c" type="rtklm_i2c_node.py" output="screen">
+    <node name="i2c_node" pkg="rtklm_i2c" type="rtklm_i2c_node.py">
 
         <param name="frequency" value="10" />
         <param name="bus" value="1" />
