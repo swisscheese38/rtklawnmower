@@ -16,8 +16,13 @@ if __name__ == '__main__':
 
     imuPub = rospy.Publisher('/imu/data', Imu, queue_size=10)
     imuMsg = Imu()
-    imu = BNO055(bus)
-    
+    calibrationBytes = rospy.get_param("~calibration")
+    if calibrationBytes == None or len(calibrationBytes) != 22:
+        rospy.logwarn("No initial IMU calibration provided")
+        imu = BNO055(bus)
+    else:
+        imu = BNO055(bus, 0x28, calibrationBytes)
+
     rate = rospy.Rate(rospy.get_param("~frequency"))
     nextCalibrationCheck = calculateNextCalibrationCheck()
 

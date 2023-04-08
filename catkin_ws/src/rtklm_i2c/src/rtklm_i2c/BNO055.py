@@ -16,7 +16,7 @@ class BNO055:
     IMU 9DOF Sensor Fusion
     """
 
-    def __init__(self, bus, address = 0x28):
+    def __init__(self, bus, address = 0x28, calibrationData = None):
         self.bus = bus
         self.address = address
         GPwrMode = self.GPwrMode.NormalG     #  Gyro power mode
@@ -36,6 +36,10 @@ class BNO055:
         #  Select BNO055 config mode
         self.writeByte(self.BNO055_OPR_MODE, self.OPRMode.CONFIGMODE )
         time.sleep(0.025)
+        #  Write calibrationData if known
+        if calibrationData != None and len(calibrationData) == 22:
+            print("calib")
+            self.writeBytes(self.BNO055_ACC_OFFSET_X_LSB, calibrationData)
         #  Select page 1 to configure sensors
         self.writeByte(self.BNO055_PAGE_ID, 0x01)
         #  Configure ACC
@@ -66,6 +70,12 @@ class BNO055:
         y = twos_complement(intY, 16)
         z = twos_complement(intZ, 16)
         return (x, y, z)
+
+    def readSingleData(self, subAddress):
+        rawData = self.readBytes(subAddress, 2)
+        intV = (rawData[1] << 8) | rawData[0]
+        v = twos_complement(intV, 16)
+        return v
 
     def readEul(self, degrees = 0):
         x, y, z = self.readData(self.BNO055_EUL_HEADING_LSB)
@@ -129,6 +139,20 @@ class BNO055:
         # Calibration status, from 0 (not calibrated) t0 3 (fully calibrated)
         self.status = {'sys': sys, 'gyro': gyro, 'acc': acc, 'mag':mag}
 
+    def readCalibOffsets(self):
+        accX, accY, accZ = self.readData(self.BNO055_ACC_OFFSET_X_LSB)
+        magX, magY, magZ = self.readData(self.BNO055_MAG_OFFSET_X_LSB)
+        gyrX, gyrY, gyrZ = self.readData(self.BNO055_GYR_OFFSET_X_LSB)
+        accR = self.readSingleData(self.BNO055_ACC_RADIUS_LSB)
+        magR = self.readSingleData(self.BNO055_MAG_RADIUS_LSB)
+        return {'accX': accX, 'accY': accY, 'accZ': accZ,
+                'magX': magX, 'magY': magY, 'magZ': magZ,
+                'gyrX': gyrX, 'gyrY': gyrY, 'gyrZ': gyrZ,
+                'accR': accR, 'magR': magR}
+
+    def readCalibrationBytes(self):
+        return self.readBytes(self.BNO055_ACC_OFFSET_X_LSB, 22)
+
     def selfTest(self):
         result = self.readBytes(self.BNO055_ST_RESULT, 1)
         mcu  = ( result[0] & 0b00001000 ) >> 3
@@ -143,6 +167,9 @@ class BNO055:
 
     def readBytes(self, subAddress, count):
         return self.bus.read_i2c_block_data(self.address, subAddress, count)
+
+    def writeBytes(self, subAddress, data):
+        self.bus.write_i2c_block_data(self.address, subAddress, data)
 
     #  BNO055 Register Map
     #  Datasheet: https:# www.bosch-sensortec.com/en/homepage/products_3/sensor_hubs/iot_solutions/bno055_1/bno055_4

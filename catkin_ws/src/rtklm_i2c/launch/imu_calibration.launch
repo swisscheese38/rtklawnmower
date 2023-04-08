@@ -1,0 +1,7 @@
+<launch>
+
+    <node name="imu_calibration" pkg="rtklm_i2c" type="imu_calibration.py" output="screen">
+        <param name="bus" value="1" />
+    </node>
+
+</launch>

@@ -11,6 +11,11 @@
         <param name="frequency" value="10" />
         <param name="bus" value="1" />
         <param name="imuFrameId" value="imu_link" />
+        <param name="calibration" type="yaml" value="[0xe9,0xff,0xe0,0xff,0xe1,0xff,
+                                                      0xa7,0x1, 0xb5, 0x1,0x85, 0x1,
+                                                      0xff,0xff,0xfe,0xff,0xff,0xff,
+                                                      0xe8,0x3,
+                                                      0x5a,0x2]" />
 
     </node>
 
