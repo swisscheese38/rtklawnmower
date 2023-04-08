@@ -38,7 +38,6 @@ class BNO055:
         time.sleep(0.025)
         #  Write calibrationData if known
         if calibrationData != None and len(calibrationData) == 22:
-            print("calib")
             self.writeBytes(self.BNO055_ACC_OFFSET_X_LSB, calibrationData)
         #  Select page 1 to configure sensors
         self.writeByte(self.BNO055_PAGE_ID, 0x01)

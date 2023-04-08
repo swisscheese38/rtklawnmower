@@ -31,13 +31,11 @@ if __name__ == '__main__':
         # occasionally check calibration status
         if nextCalibrationCheck < rospy.Time.now():
             imu.readCalib()
-            for calibstatus_key, calibstatus_val in imu.status.items():
-                if calibstatus_val != 3:
-                    rospy.logwarn("IMU " + calibstatus_key + " not fully calibrated: " + str(calibstatus_val))
+            if not all(v == 3 for v in imu.status.values()):
+                rospy.logwarn("IMU not fully calibrated: " + str(imu.status))
             imu.selfTest()
-            for selftest_key, selftest_val in imu.result.items():
-                if selftest_val != 1:
-                    rospy.logwarn("IMU " + selftest_key + " didn't pass selftest: " + str(selftest_val))
+            if not all(v == 1 for v in imu.result.values()):
+                rospy.logwarn("IMU didn't pass selftest: " + str(imu.result))
             nextCalibrationCheck = calculateNextCalibrationCheck()
         
         imuMsg.header.stamp = rospy.get_rostime()

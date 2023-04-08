@@ -5,7 +5,7 @@ diff_drive_controller:
   pose_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
   twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
   publish_rate: 10
-  enable_odom_tf: true # later, tf will be published by localization (fused together with IMU and GPS)
+  enable_odom_tf: false # tf is published by localization (odom fused together with IMU and GPS)
 
 joint_state_controller:
   type: "joint_state_controller/JointStateController"
