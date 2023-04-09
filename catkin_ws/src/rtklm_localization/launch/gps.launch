@@ -2,6 +2,7 @@
 
     <!-- Connect as a client to the GPSD deamon -->
     <node pkg="gpsd_client" type="gpsd_client" name="gpsd_client">
+        <param name="frame_id" value="gps_link" />
         <remap from="/fix" to="/gps/fix" />
         <remap from="/extended_fix" to="/gps/extended_fix" />
     </node>
