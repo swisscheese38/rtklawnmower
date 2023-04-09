@@ -19,45 +19,25 @@ class BNO055:
     def __init__(self, bus, address = 0x28, calibrationData = None):
         self.bus = bus
         self.address = address
-        GPwrMode = self.GPwrMode.NormalG     #  Gyro power mode
-        Gscale = self.Gscale.GFS_250DPS   #  Gyro full scale
-        # Godr = GODR_250Hz     #  Gyro sample rate
-        Gbw = self.Gbw.GBW_23Hz        #  Gyro bandwidth
-        Ascale = self.Ascale.AFS_2G       #  Accel full scale
-        # Aodr = AODR_250Hz     #  Accel sample rate
-        APwrMode = self.APwrMode.NormalA     #  Accel power mode
-        Abw = self.Abw.ABW_31_25Hz     #  Accel bandwidth, accel sample rate divided by ABW_divx
-        # Mscale = MFS_4Gauss   #  Select magnetometer full-scale resolution
-        MOpMode = self.MOpMode.Regular     #  Select magnetometer perfomance mode
-        MPwrMode = self.MPwrMode.Normal     #  Select magnetometer power mode
-        Modr = self.Modr.MODR_10Hz      #  Select magnetometer ODR when in BNO055 bypass mode
-        PWRMode = self.PWRMode.Normalpwr     #  Select BNO055 power mode
-        OPRMode = self.OPRMode.NDOF        #
-        #  Select BNO055 config mode
+
+        #  Select BNO055 config mode (requires 19ms, see table 3-6)
         self.writeByte(self.BNO055_OPR_MODE, self.OPRMode.CONFIGMODE )
         time.sleep(0.025)
+
+        #  Select BNO055 sensor units
+        # Linear acceleration units 0x00000000 METERS_PER_SECOND
+        # Anguar velocity units     0x00000010 RAD_PER_SECOND
+        # Euler orientation units   0x00000100 RAD
+        # Temperature units         0x00000000 CELSIUS
+        # Orientation mode          0x00000000 WINDOWS_ORIENTATION
+        self.writeByte(self.BNO055_UNIT_SEL, 0x00000110 )
+
         #  Write calibrationData if known
         if calibrationData != None and len(calibrationData) == 22:
             self.writeBytes(self.BNO055_ACC_OFFSET_X_LSB, calibrationData)
-        #  Select page 1 to configure sensors
-        self.writeByte(self.BNO055_PAGE_ID, 0x01)
-        #  Configure ACC
-        self.writeByte(self.BNO055_ACC_CONFIG, APwrMode << 5 | Abw << 3 | Ascale )
-        #  Configure GYR
-        self.writeByte(self.BNO055_GYRO_CONFIG_0, Gbw << 3 | Gscale )
-        self.writeByte(self.BNO055_GYRO_CONFIG_1, GPwrMode)
-        #  Configure MAG
-        self.writeByte(self.BNO055_MAG_CONFIG, MPwrMode << 5 | MOpMode << 3 | Modr )
-        #  Select page 0 to read sensors
-        self.writeByte(self.BNO055_PAGE_ID, 0x00)
-        #  Select BNO055 gyro temperature source
-        self.writeByte(self.BNO055_TEMP_SOURCE, 0x01 )
-        #  Select BNO055 sensor units (temperature in degrees C, rate in dps, accel in mg)
-        self.writeByte(self.BNO055_UNIT_SEL, 0x01 )
-        #  Select BNO055 system power mode
-        self.writeByte(self.BNO055_PWR_MODE, PWRMode )
-        #  Select BNO055 system operation mode
-        self.writeByte(self.BNO055_OPR_MODE, OPRMode )
+        
+        #  Select BNO055 system operation mode (requires 7ms, see table 3-6)
+        self.writeByte(self.BNO055_OPR_MODE, self.OPRMode.NDOF )
         time.sleep(0.025)
 
     def readData(self, subAddress):
@@ -76,14 +56,6 @@ class BNO055:
         v = twos_complement(intV, 16)
         return v
 
-    def readEul(self, degrees = 0):
-        x, y, z = self.readData(self.BNO055_EUL_HEADING_LSB)
-        if degrees == 0:
-            unit = 16.0
-        else:   # radians
-            unit = 900.0
-        self.euler = {'x': x/unit, 'y': y/unit, 'z': z/unit}
-
     def readQuat(self):
         rawData = self.readBytes(self.BNO055_QUA_DATA_W_LSB, 8)
         intQW = (rawData[1] << 8) | rawData[0]
@@ -94,40 +66,20 @@ class BNO055:
         qx = twos_complement(intQX, 16)/16384.
         qy = twos_complement(intQY, 16)/16384.
         qz = twos_complement(intQZ, 16)/16384.
+        # No conversion needed
         self.quat = {'qw': qw, 'qx': qx, 'qy': qy, 'qz': qz}
-
-    def readAccel(self):
-        x, y, z = self.readData(self.BNO055_ACC_DATA_X_LSB)
-        self.accel = {'x': x, 'y': y, 'z': z}
 
     def readGyro(self):
         x, y, z = self.readData(self.BNO055_GYR_DATA_X_LSB)
-        self.gyro = {'x': x, 'y': y, 'z': z}
+        # Convert values to an appropriate range (section 3.6.4)
+        unit = 900.0 #ANGULAR_RAD_SCALE 1 rad/s = 900 LSB
+        self.gyro = {'x': x/unit, 'y': y/unit, 'z': z/unit}
 
-    def readMag(self):
-        x, y, z = self.readData(self.BNO055_MAG_DATA_X_LSB)
-        self.mag = {'x': x, 'y': y, 'z': z}
-
-    def readLinAccel(self, ms2 = 0):
+    def readLinAccel(self):
         x, y, z = self.readData(self.BNO055_LIA_DATA_X_LSB)
-        if ms2 == 0:
-            unit = 100.0
-        else:   # mg
-            unit = 1.0
+        # Convert values to an appropriate range (section 3.6.4)
+        unit = 100.0 # LINEAR_SCALE 1 m/s2 = 100 LSB
         self.linAccel = {'x': x/unit, 'y': y/unit, 'z': z/unit}
-
-    def readGrav(self, ms2 = 0):
-        x, y, z = self.readData(self.BNO055_GRV_DATA_X_LSB)
-        if ms2 == 0:
-            unit = 100.0
-        else:   # mg
-            unit = 1.0
-        self.grav = {'x': x/unit, 'y': y/unit, 'z': z/unit}
-
-    def readTemp(self):
-        c = self.readBytes(self.BNO055_TEMP, 1)
-        f = float(c[0])*1.8+32
-        self.temp = {'C': c[0], 'F': f}
 
     def readCalib(self):
         stat = self.readBytes(self.BNO055_CALIB_STAT, 1)

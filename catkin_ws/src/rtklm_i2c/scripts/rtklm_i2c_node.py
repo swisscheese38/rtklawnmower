@@ -41,30 +41,21 @@ if __name__ == '__main__':
         imuMsg.header.stamp = rospy.get_rostime()
         imuMsg.header.frame_id = rospy.get_param("~imuFrameId")
 
-        imu.readGyro()
-        imuMsg.angular_velocity.x = imu.gyro['x']
-        imuMsg.angular_velocity.y = imu.gyro['y']
-        imuMsg.angular_velocity.z = imu.gyro['z']
-        imuMsg.angular_velocity_covariance[0] = 0.1
-        imuMsg.angular_velocity_covariance[4] = 0.1
-        imuMsg.angular_velocity_covariance[8] = 0.1
-
-        imu.readLinAccel()
-        imuMsg.linear_acceleration.x = imu.linAccel['x']
-        imuMsg.linear_acceleration.y = imu.linAccel['y']
-        imuMsg.linear_acceleration.z = imu.linAccel['z']
-        imuMsg.linear_acceleration_covariance[0] = 1.0
-        imuMsg.linear_acceleration_covariance[4] = 1.0
-        imuMsg.linear_acceleration_covariance[8] = 1.0
-
         imu.readQuat()
         imuMsg.orientation.x = imu.quat['qx']
         imuMsg.orientation.y = imu.quat['qy']
         imuMsg.orientation.z = imu.quat['qz']
         imuMsg.orientation.w = imu.quat['qw']
-        imuMsg.orientation_covariance[0] = 0.03
-        imuMsg.orientation_covariance[4] = 0.03
-        imuMsg.orientation_covariance[8] = 0.03
+
+        imu.readLinAccel()
+        imuMsg.linear_acceleration.x = imu.linAccel['x']
+        imuMsg.linear_acceleration.y = imu.linAccel['y']
+        imuMsg.linear_acceleration.z = imu.linAccel['z']
+
+        imu.readGyro()
+        imuMsg.angular_velocity.x = imu.gyro['x']
+        imuMsg.angular_velocity.y = imu.gyro['y']
+        imuMsg.angular_velocity.z = imu.gyro['z']
 
         imuPub.publish(imuMsg)
         rate.sleep()
