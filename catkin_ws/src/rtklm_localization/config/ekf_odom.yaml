@@ -1,3 +1,5 @@
+# https://github.com/cra-ros-pkg/robot_localization/blob/noetic-devel/params/dual_ekf_navsat_example.yaml
+
 frequency: 10
 two_d_mode: true
 

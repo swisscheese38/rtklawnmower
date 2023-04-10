@@ -10,7 +10,7 @@
   <include file="$(find rtklm_arduino)/launch/arduino.launch" />
 
   <!-- Start DiffDrive controller -->
-  <include file="$(find rtklm_bringup)/launch/control.launch"/>
+  <include file="$(find rtklm_control)/launch/control.launch"/>
 
   <!-- Fuse GPS, Wheel odometry and IMU -->
   <include file="$(find rtklm_localization)/launch/localization.launch" />

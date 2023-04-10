@@ -2,7 +2,7 @@
 <launch>
 
   <!-- Load controller configuration -->
-  <rosparam command="load" file="$(find rtklm_bringup)/config/control.yaml" />
+  <rosparam command="load" file="$(find rtklm_control)/config/control.yaml" />
   <!--remap from="/diff_drive_controller/cmd_vel" to="/cmd_vel"/-->
   <!--remap from="/diff_drive_controller/odom" to="/odom"/-->
 
