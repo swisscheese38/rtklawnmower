@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="move_base" pkg="move_base" type="move_base" respawn="false" output="screen">
+    
+    <rosparam file="$(find rtklm_navigation)/config/costmap_common.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find rtklm_navigation)/config/costmap_common.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find rtklm_navigation)/config/costmap_global.yaml" command="load" />
+    <rosparam file="$(find rtklm_navigation)/config/costmap_local.yaml" command="load" />
+
+    <rosparam file="$(find rtklm_navigation)/config/planner_global.yaml" command="load" />
+    <rosparam file="$(find rtklm_navigation)/config/planner_local.yaml" command="load" />
+
+    <remap from="/cmd_vel" to="/diff_drive_controller/cmd_vel" />
+
+  </node>
+</launch>

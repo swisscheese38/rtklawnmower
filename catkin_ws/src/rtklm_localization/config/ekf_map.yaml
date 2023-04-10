@@ -1,6 +1,7 @@
 # https://github.com/cra-ros-pkg/robot_localization/blob/noetic-devel/params/dual_ekf_navsat_example.yaml
 
 frequency: 10
+transform_time_offset: 0.05 # navsat_transform_node needs the transform a little later
 two_d_mode: true
 
 map_frame: map
