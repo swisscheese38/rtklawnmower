@@ -24,7 +24,7 @@ Work in progress. Inspired by https://openmower.de/
 
 ### udev rules for USB devices
 
-TO ensure that we have constant device names that we can use to access the different devices over USB, we create some udev rules. First we plugin the different devices one by one and identify vendor and product IDs for each of them by typing `lsusb` in between:
+To ensure that we have constant device names that we can use to access the different devices over USB, we create some udev rules. First we plugin the different devices one by one and identify vendor and product IDs for each of them by typing `lsusb` in between:
 
 ```
 ...
@@ -53,23 +53,32 @@ lrwxrwxrwx 1 root root         7 Apr  2 07:07 /dev/usb-nano -> ttyUSB1
 
 We are using some cheap ZS-X11H V2 motor drivers to interact with the BLDC motors from the mower. The HAL encoders need to be pulled up high for the motor driver to be able to read the position values. Refer to [this guide](https://www.digikey.no/no/blog/using-bldc-hall-sensors-as-position-encoders-part-3) to get more information. I used 4.7 kOhm resistors. The direction has to be controlled by connecting a pin to ground. As this cannot be achieved with an Arduino out of the box, I used a 2N2222 transistor and a 1 kOhm resistor as suggested in [this forum entry](https://forums.raspberrypi.com/viewtopic.php?t=335218).
 
-### GPS
+### GPS Base
+
+If you live close enough to a reliable publicly available base station, you don't necessarily need to do run your own GPS base station.
+
+But for our setup we are going to install one ourselves. The Simplertk2B is transmitting its data to the free NTRIP Caster rtk2go.com so it can not only be used by myself but also by others that live close enough. You can use any ESP32 and flash it with [the same firmware](https://github.com/nebkat/esp32-xbee) that Ardusimple is also using for their WiFi NTRIP Master ESP32.
+
+If you want to achieve sub-centimeter accuracy also for absolute positions you can use one of the free PPP services for post processing your exact location. For this you first upload the `RAW data (PPK) over UART1 & USB at 1Hz` configuration from [Ardusimple's provided configuration files](https://www.ardusimple.com/configuration-files/). You start up u-center and record raw data to a file for 24 hours. Then you convert the `.ubx` file to a RINEX `.obs` file and upload it to [Canadian Spatial Reference System Precise Point Positioning (CSRS-PPP)](https://webapp.csrs-scrs.nrcan-rncan.gc.ca/geod/tools-outils/ppp.php). You will then receive a report with the very precise position of your base station's antenna. You can now upload the `Base` configuration from [Ardusimple's provided configuration files](https://www.ardusimple.com/configuration-files/) and then adjust the survey in method from `survey in` to `fixed` in u-center under `UBX->CFG->TMODE3` together with your precise coordinates. Don't forget to persist your changes under `UBX->CFG->CFG`. There's a great [tutorial from Sparkfun](
+https://learn.sparkfun.com/tutorials/how-to-build-a-diy-gnss-reference-station/) that helped me a lot. The F9P configuration (with my specific location) can be found in [gnss-base.txt](gnss-base.txt).
+
+### GPS Rover
 
 The Simplertk2b is going to be connected to the Raspberry Pi through a serial connection (using the provided Arduino Serial Shield by Ardusimple). For this to work, serial needs to be enabled by adding the line `enable_uart=1` to `/boot/firmware/syscfg.txt`. As we don't want to login through serial we remove the part `console=serial0,115200` from `/boot/firmware/cmdline.txt`. Disable serial Getty by `sudo systemctl stop serial-getty@ttyS0.service` and `sudo systemctl disable serial-getty@ttyS0.service`.
 
 Furthermore Bluetooth needs to be disabled. This can be done by adding another line `dtoverlay=disable-bt` to the file `/boot/firmware/usercfg.txt`.
 
-Unfortuunately, as soon as the Simplertk2b is connected, the Pi will no longer boot. When hooking it up to a screen through HDMI you see that it is stuck before booting into Ubuntu. This is because the messages from the GPS module coming thrugh serial now interrupt the autoboot countdown. Therefore we don't want to use u-boot anymore for bootloader but start into Ubuntu directly. As suggested in [Ubuntu's wiki for the Raspberry Pi](https://wiki.ubuntu.com/ARM/RaspberryPi#Change_the_bootloader) we do so by commenting out the `device_tree_address` section in `/boot/firmware/config.txt` and by exchanging the line `kernel=uboot_rpi_4.bin` for `kernel=vmlinuz` and by adding the line `initramfs initrd.img followkernel` just below.
+Unfortuunately, as soon as the Simplertk2b is connected, the Pi will no longer boot. When hooking it up to a screen through HDMI you see that it is stuck before booting into Ubuntu. This is because the messages from the GPS module coming through serial now interrupt the autoboot countdown. Therefore we don't want to use u-boot anymore for bootloader but start into Ubuntu directly. As suggested in [Ubuntu's wiki for the Raspberry Pi](https://wiki.ubuntu.com/ARM/RaspberryPi#Change_the_bootloader) we do so by commenting out the `device_tree_address` section in `/boot/firmware/config.txt` and by exchanging the line `kernel=uboot_rpi_4.bin` for `kernel=vmlinuz` and by adding the line `initramfs initrd.img followkernel` just below.
 
 After rebooting you should now see (scrambled) messages coming in from the GPS device when you look at `less -f /dev/ttyAMA0`.
 
-We are going to configure `gpsd` to provide the GPS data. For this to work `/etc/default/gpsd` has to be adjusted for `DEVICES="/dev/ttyAMA0"` and `GPSD_OPTIONS="-s 38400"` (select the serial speed baud rate that your ublox is currently configured). Afterwards restart the deamon with `sudo systemctl restart gpsd.socket`. Then finally you should see some GPS data when you open up `cgps`.
+We are going to configure `gpsd` to provide the GPS data. For this to work `/etc/default/gpsd` has to be adjusted for `DEVICES="/dev/ttyAMA0"` and `GPSD_OPTIONS="-s 38400"` (select the serial speed baud rate that your ublox is currently configured). Afterwards restart the daemon with `sudo systemctl restart gpsd.socket`. Then finally you should see some GPS data when you open up `cgps`.
 
-In order for us to provide correction data to the rover, we are installing our own base station. If you live close enough to a reliable publicly available base station, you don't necessarily need to have your own base station. The connection is done from the Raspberry Pi through USB to the second USB port of the Simplertk2b board that connects to the XBee socket, where we connect the RX/TX-pins according to [this guide on Youtube](https://youtu.be/qlkN70bBfFQ). Additionally, the Baudrate for UART1 is also increased to 115200 in Ucenter under UBX->CFG->PRT. The F9P configuration can be found in [gnss-rover.txt](gnss-rover.txt).
+The connection is done from the Raspberry Pi through USB to the second USB port of the Simplertk2b board that connects to the XBee socket, where we connect the RX/TX-pins according to [this guide on Youtube](https://youtu.be/qlkN70bBfFQ). Additionally, the Baudrate for UART1 is also increased to 115200 in u-center under UBX->CFG->PRT. The F9P configuration can be found in [gnss-rover.txt](gnss-rover.txt).
 
-Afterwards, the configuration in `/etc/default/gpsd` has to be ajusted to reflect the changed baudrate `GPSD_OPTIONS="-s 115200"`. Restart the deamon with `sudo systemctl restart gpsd.socket` and you should again be able to see position data when you look at `cgps`. You will also notice that the rate of data coming in is much higher now as we increased it from 1Hz (factory setting) to 10Hz.
+Afterwards, the configuration in `/etc/default/gpsd` has to be adjusted to reflect the changed baudrate `GPSD_OPTIONS="-s 115200"`. Restart the daemon with `sudo systemctl restart gpsd.socket` and you should again be able to see position data when you look at `cgps`. You will also notice that the rate of data coming in is much higher now as we increased it from 1Hz (factory setting) to 10Hz.
 
-For sending the correction data, we use str2str, which doesn't have to be compiled ourselves but can simply be installed as an Ubuntu package with `sudo apt install rtklib`. As we want to have the data streamed to the Simplertk2b board at all times, we will install `str2str` as a systemd servie. Create a file `sudo vi /lib/systemd/system/str2str.service` with the following content:
+For sending the correction data, we use str2str, which doesn't have to be compiled ourselves but can simply be installed as an Ubuntu package with `sudo apt install rtklib`. As we want to have the data streamed to the Simplertk2b board at all times, we will install `str2str` as a systemd service. Create a file `sudo vi /lib/systemd/system/str2str.service` with the following content:
 
 ```
 [Unit]
