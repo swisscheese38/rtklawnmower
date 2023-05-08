@@ -1,10 +1,9 @@
 <launch>
 
-    <!-- Connect as a client to the GPSD deamon -->
-    <node pkg="gpsd_client" type="gpsd_client" name="gpsd_client">
-        <param name="frame_id" value="gps_link" />
-        <remap from="/fix" to="/gps/fix" />
-        <remap from="/extended_fix" to="/gps/extended_fix" />
+    <!-- Read out binary UBX messages over Serial from Ardusimple Simplertk2b's Ublox F9P chip -->
+    <node pkg="ublox_gps" type="ublox_gps" name="gps_client" output="screen">
+        <rosparam command="load" file="$(find rtklm_localization)/config/ardusimple.yaml" />
+        <remap from="/gps_client/fix" to="/fix" />
     </node>
 
 </launch>

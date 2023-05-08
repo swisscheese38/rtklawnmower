@@ -1,0 +1,13 @@
+device: /dev/ttyAMA0
+uart1:
+  baudrate: 115200
+config_on_startup: false
+
+debug: 0
+inf:
+  all: false
+
+frame_id: gps_link
+rate: 10
+publish:
+  all: false

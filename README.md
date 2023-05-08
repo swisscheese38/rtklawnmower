@@ -18,7 +18,7 @@ Work in progress. Inspired by https://openmower.de/
 
 * Ubuntu 20.04 Server
 * ROS1
-* Installed Packages: `git unzip ros-noetic-ros-base gpsd gpsd–clients python-gps rtklib build-essential ros-noetic-controller-manager ros-noetic-joint-state-controller ros-noetic-serial ros-noetic-robot-state-publisher ros-noetic-xacro ros-noetic-diff-drive-controller ros-noetic-teleop-twist-keyboard i2c-tools ros-noetic-gpsd-client ros-noetic-gps-common ros-noetic-robot-localization ros-noetic-move-base python3-pip`
+* Installed Packages: `git unzip ros-noetic-ros-base python3-pip rtklib build-essential ros-noetic-controller-manager ros-noetic-joint-state-controller ros-noetic-serial ros-noetic-robot-state-publisher ros-noetic-xacro ros-noetic-diff-drive-controller ros-noetic-teleop-twist-keyboard i2c-tools ros-noetic-ublox ros-noetic-gps-common ros-noetic-robot-localization ros-noetic-move-base`
 
 ## Installation
 
@@ -70,13 +70,9 @@ Furthermore Bluetooth needs to be disabled. This can be done by adding another l
 
 Unfortuunately, as soon as the Simplertk2b is connected, the Pi will no longer boot. When hooking it up to a screen through HDMI you see that it is stuck before booting into Ubuntu. This is because the messages from the GPS module coming through serial now interrupt the autoboot countdown. Therefore we don't want to use u-boot anymore for bootloader but start into Ubuntu directly. As suggested in [Ubuntu's wiki for the Raspberry Pi](https://wiki.ubuntu.com/ARM/RaspberryPi#Change_the_bootloader) we do so by commenting out the `device_tree_address` section in `/boot/firmware/config.txt` and by exchanging the line `kernel=uboot_rpi_4.bin` for `kernel=vmlinuz` and by adding the line `initramfs initrd.img followkernel` just below.
 
-After rebooting you should now see (scrambled) messages coming in from the GPS device when you look at `less -f /dev/ttyAMA0`.
-
-We are going to configure `gpsd` to provide the GPS data. For this to work `/etc/default/gpsd` has to be adjusted for `DEVICES="/dev/ttyAMA0"` and `GPSD_OPTIONS="-s 38400"` (select the serial speed baud rate that your ublox is currently configured). Afterwards restart the daemon with `sudo systemctl restart gpsd.socket`. Then finally you should see some GPS data when you open up `cgps`.
+After rebooting you should now see (scrambled because of binary UBX protocol) messages coming in from the GPS device when you look at `less -f /dev/ttyAMA0`.
 
 The connection is done from the Raspberry Pi through USB to the second USB port of the Simplertk2b board that connects to the XBee socket, where we connect the RX/TX-pins according to [this guide on Youtube](https://youtu.be/qlkN70bBfFQ). Additionally, the Baudrate for UART1 is also increased to 115200 in u-center under UBX->CFG->PRT. The F9P configuration can be found in [gnss-rover.txt](gnss-rover.txt).
-
-Afterwards, the configuration in `/etc/default/gpsd` has to be adjusted to reflect the changed baudrate `GPSD_OPTIONS="-s 115200"`. Restart the daemon with `sudo systemctl restart gpsd.socket` and you should again be able to see position data when you look at `cgps`. You will also notice that the rate of data coming in is much higher now as we increased it from 1Hz (factory setting) to 10Hz.
 
 For sending the correction data, we use str2str, which doesn't have to be compiled ourselves but can simply be installed as an Ubuntu package with `sudo apt install rtklib`. As we want to have the data streamed to the Simplertk2b board at all times, we will install `str2str` as a systemd service. Create a file `sudo vi /lib/systemd/system/str2str.service` with the following content:
 
