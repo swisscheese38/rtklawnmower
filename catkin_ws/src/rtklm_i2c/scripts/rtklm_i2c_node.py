@@ -7,7 +7,7 @@ from sensor_msgs.msg import Imu
 from rtklm_i2c.BNO055 import BNO055
 
 def calculateNextCalibrationCheck():
-    return rospy.Time.now() + rospy.rostime.Duration(5)
+    return rospy.Time.now() + rospy.rostime.Duration(60)
 
 if __name__ == '__main__':
     rospy.init_node('rtklm_i2c_node')
@@ -24,7 +24,7 @@ if __name__ == '__main__':
         imu = BNO055(bus, 0x28, calibrationBytes)
 
     rate = rospy.Rate(rospy.get_param("~frequency"))
-    nextCalibrationCheck = calculateNextCalibrationCheck()
+    nextCalibrationCheck = rospy.Time.now()
 
     while not rospy.is_shutdown():
 
@@ -46,16 +46,25 @@ if __name__ == '__main__':
         imuMsg.orientation.y = imu.quat['qy']
         imuMsg.orientation.z = imu.quat['qz']
         imuMsg.orientation.w = imu.quat['qw']
+        imuMsg.orientation_covariance[0] = 0.03 # covariance in x,y,z (3x3)
+        imuMsg.orientation_covariance[4] = 0.03
+        imuMsg.orientation_covariance[8] = 0.03
 
         imu.readLinAccel()
         imuMsg.linear_acceleration.x = imu.linAccel['x']
         imuMsg.linear_acceleration.y = imu.linAccel['y']
         imuMsg.linear_acceleration.z = imu.linAccel['z']
+        imuMsg.linear_acceleration_covariance[0] = 1.00 # covariance in x,y,z (3x3)
+        imuMsg.linear_acceleration_covariance[4] = 1.00
+        imuMsg.linear_acceleration_covariance[8] = 1.00
 
         imu.readGyro()
-        imuMsg.angular_velocity.x = imu.gyro['x']
-        imuMsg.angular_velocity.y = imu.gyro['y']
-        imuMsg.angular_velocity.z = imu.gyro['z']
+        imuMsg.angular_velocity.x = round(imu.gyro['x'], 5)
+        imuMsg.angular_velocity.y = round(imu.gyro['y'], 5)
+        imuMsg.angular_velocity.z = round(imu.gyro['z'], 5)
+        imuMsg.angular_velocity_covariance[0] = 0.10 # covariance in x,y,z (3x3)
+        imuMsg.angular_velocity_covariance[4] = 0.10
+        imuMsg.angular_velocity_covariance[8] = 0.10
 
         imuPub.publish(imuMsg)
         rate.sleep()
